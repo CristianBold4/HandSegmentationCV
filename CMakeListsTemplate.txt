@@ -1,16 +1,22 @@
 cmake_minimum_required(VERSION 2.8)
 
-project(${PROJECT_NAME})
-
 set(CMAKE_CXX_STANDARD 14)
 
 find_package(OpenCV REQUIRED)
 
+# Set project filename
+project(${PROJECT_NAME} "nome_progetto")
+
+
 # Where to find CMake modules and OpenCV
+# Set enviroment variable OPENCV_DIR that points to the build OpenCV libraries"
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
+
+# set list of include directories: include is the usual name of where to put header file (*.h)
 include_directories(${OpenCV_INCLUDE_DIRS} include)
 
-add_executable(${PROJECT_NAME} main.cpp filters.cpp)
+# if does not work, replace *.cpp with all sources.cpp files"
+add_executable(${PROJECT_NAME} *.cpp)
 
 # add libs you need
 set(OpenCV_LIBS opencv_core opencv_imgproc opencv_highgui opencv_imgcodecs) 
