@@ -9,4 +9,4 @@ Computer Vision project 2022
 
 <h1> Models for Hand Detection </h1>
 
-* First model: spec of EfficientDet-3, trained on whole EgoHandsDataset with 4800 images (3829 training, 476 validation, 495 test), 15 ephocs and batch size 16
+* First model: spec of EfficientDet-3, trained on whole EgoHandsDataset with 4800 images (3829 training, 476 validation, 495 test), 15 epochs and batch size 16
