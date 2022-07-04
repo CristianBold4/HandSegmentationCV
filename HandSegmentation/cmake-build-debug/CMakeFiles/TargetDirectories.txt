@@ -1,0 +1,3 @@
+C:/Users/Cristian/Desktop/LAB7/HandSegmentation/cmake-build-debug/CMakeFiles/HandSegmentation.dir
+C:/Users/Cristian/Desktop/LAB7/HandSegmentation/cmake-build-debug/CMakeFiles/edit_cache.dir
+C:/Users/Cristian/Desktop/LAB7/HandSegmentation/cmake-build-debug/CMakeFiles/rebuild_cache.dir

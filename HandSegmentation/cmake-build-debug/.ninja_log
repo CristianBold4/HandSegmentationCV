@@ -1,0 +1,16 @@
+# ninja log v5
+2	700	6786332990751592	build.ninja	bdc61d6297a568a8
+969	1107	6786322020368610	ImageStitching.exe	ee28c3eafebf4fff
+11	1018	6786333044427104	CMakeFiles/HandSegmentation.dir/code/main.cpp.obj	87c54fdfc7c1b908
+0	1162	6786333045853288	CMakeFiles/HandSegmentation.dir/code/Segmentation.cpp.obj	276399bee77a2dda
+1162	1317	6786333047399278	HandSegmentation.exe	e9b23b27eea45c7a
+3	977	6786333215734007	CMakeFiles/HandSegmentation.dir/code/main.cpp.obj	87c54fdfc7c1b908
+977	1113	6786333217070453	HandSegmentation.exe	e9b23b27eea45c7a
+3	965	6786333306128606	CMakeFiles/HandSegmentation.dir/code/main.cpp.obj	87c54fdfc7c1b908
+966	1105	6786333307498649	HandSegmentation.exe	e9b23b27eea45c7a
+4	970	6786333455687239	CMakeFiles/HandSegmentation.dir/code/main.cpp.obj	87c54fdfc7c1b908
+970	1111	6786333457073817	HandSegmentation.exe	e9b23b27eea45c7a
+3	968	6786333541805523	CMakeFiles/HandSegmentation.dir/code/main.cpp.obj	87c54fdfc7c1b908
+968	1105	6786333543159102	HandSegmentation.exe	e9b23b27eea45c7a
+3	959	6786333739661176	CMakeFiles/HandSegmentation.dir/code/main.cpp.obj	87c54fdfc7c1b908
+960	1096	6786333741008605	HandSegmentation.exe	e9b23b27eea45c7a
