@@ -8,8 +8,8 @@ using namespace cv;
 
 int main(int argc, char ** argv) {
 
-    string bb_path = "../det/01.txt";
-    Mat src = imread("../rgb/01.jpg");
+    string bb_path = "../../../det/07.txt";
+    Mat src = imread("../../../rgb/07.jpg");
 
     if (src.empty()) {
         cerr << "Error! Input image is empty\n";
@@ -36,28 +36,28 @@ int main(int argc, char ** argv) {
 	*/
 
 
-    /*
-    // compute difference image
-    Mat difference;
-    seg.difference_from_center(src, difference, boxes_vec);
-    namedWindow("diff", WINDOW_AUTOSIZE);
-    imshow("diff", difference);
-    waitKey(0);
+	// compute difference image
+	Mat difference, tres_diff, tres_diff_bb, gb_th;
+	seg.difference_from_center(src, difference, boxes_vec);
+	//namedWindow("diff", WINDOW_AUTOSIZE);
+	//imshow("diff", difference);
+	//waitKey(0);
 
-    //si potrebbe fare treshold della difference ma devo trovare un buon valore.
-    threshold(difference, difference,30, 250,THRESH_BINARY_INV);
-    namedWindow("tresh_diff", WINDOW_AUTOSIZE);
-    imshow("tresh_diff", difference);
-    waitKey(0);
-    */
+	seg.treshold_difference(difference, tres_diff, boxes_vec);
+	namedWindow("tf", WINDOW_AUTOSIZE);
+	imshow("tf", tres_diff);
+	waitKey(0);
 
 
-    // segmentation with GrabCut
-    seg.draw_segmentation_GB(src, segmented, boxes_vec);
-    seg.draw_box_image(segmented, boxed, boxes_vec);
-    namedWindow("image", WINDOW_AUTOSIZE);
-    imshow("image", boxed);
-    waitKey(0);
+	seg.draw_segmentation_GB_mask(src, gb_th, tres_diff, boxes_vec);
+	//namedWindow("gbmask", WINDOW_AUTOSIZE);
+	//imshow("gbmask", gb_th);
+	//waitKey(0);
+	seg.draw_box_image(gb_th, gb_th, boxes_vec);
+	namedWindow("image", WINDOW_AUTOSIZE);
+	imshow("image", gb_th);
+	waitKey(0);
+
 
     return 0;
 

@@ -7,8 +7,6 @@ using namespace cv;
 using namespace std;
 
 
-
-
 void Segmentation::crop(Mat src, Mat& dst, array<int, 4> box)
 {
 	int x = box[0];
@@ -31,7 +29,7 @@ The K-means algorithm is performed in a vector space where each vector contains 
 **/
 void Segmentation::draw_segmentation_Km(cv::Mat src, cv::Mat& dst, vector<array<int, 4>> bound_boxes)
 {
-	Mat gaus_blurred, src_ycc, out, labels,bil;
+	Mat gaus_blurred, src_ycc, out, labels, bil;
 	dst = src.clone();
 	GaussianBlur(src, gaus_blurred, Size(7, 7), 0);
 	cvtColor(gaus_blurred, src_ycc, COLOR_BGR2YCrCb, 0);
@@ -48,7 +46,7 @@ void Segmentation::draw_segmentation_Km(cv::Mat src, cv::Mat& dst, vector<array<
 		int y = bound_boxes[l][1];
 		int w = bound_boxes[l][2];
 		int h = bound_boxes[l][3];
-		
+
 		Mat roi(src_ycc(Rect(x, y, w, h)));
 		Mat points = Mat::zeros(roi.cols * roi.rows, 3, CV_32F);
 		float center_x = float(roi.rows) / 2;
@@ -56,7 +54,7 @@ void Segmentation::draw_segmentation_Km(cv::Mat src, cv::Mat& dst, vector<array<
 		for (int i = 0; i < roi.rows; i++) {
 			for (int j = 0; j < roi.cols; j++) {
 				//the next line takes into account the euclidean distance between a pixel and the centre (divided to adjust weight)
-				points.at<float>((i * roi.cols + j), 0) =sqrt( (center_x - i)*(center_x - i) + (center_y - j) * (center_y - j) )/3;
+				points.at<float>((i * roi.cols + j), 0) = sqrt((center_x - i) * (center_x - i) + (center_y - j) * (center_y - j)) / 3;
 				points.at<float>((i * roi.cols + j), 1) = roi.at<Vec3b>(i, j)[1];
 				points.at<float>((i * roi.cols + j), 2) = roi.at<Vec3b>(i, j)[2];
 			}
@@ -65,14 +63,14 @@ void Segmentation::draw_segmentation_Km(cv::Mat src, cv::Mat& dst, vector<array<
 		int K = 2;
 		kmeans(points, K, labels, TermCriteria(TermCriteria::EPS + TermCriteria::COUNT, 20, 0.5), 10, KMEANS_RANDOM_CENTERS);
 
-		roi= dst(Rect(x, y, w, h));
+		roi = dst(Rect(x, y, w, h));
 		for (int i = 0; i < roi.rows; i++) {
 			for (int j = 0; j < roi.cols; j++) {
 				int label = labels.at<int>(i * roi.cols + j);
-				if (label== labels.at<int>( (roi.rows/2 * roi.cols) + (roi.cols/2) )){
+				if (label == labels.at<int>((roi.rows / 2 * roi.cols) + (roi.cols / 2))) {
 					roi.at<Vec3b>(i, j) = colors[l];
 				}
-								
+
 			}
 		}
 	}
@@ -85,19 +83,19 @@ void Segmentation::draw_segmentation_Km(cv::Mat src, cv::Mat& dst, vector<array<
 method that parse the txt file that contains the bounding boxes cordinates and return an array containing such cordinates
 The cordinates are expressed as : [ (top-lef corner x cordinate), (top-lef corner y cordinate), (width), (heigth) ]
 
-@param path path of the txt file that contains the bounding boxes cordinates. 
+@param path path of the txt file that contains the bounding boxes cordinates.
 @return a vector of array, each array containing the cordinates of a single bounding boxe.
 **/
 vector<array<int, 4>> Segmentation::read_bb_file(string path)
 {
 	String line;
 	vector<String> line_vec;
-	vector<array<int,4>> boxes;
+	vector<array<int, 4>> boxes;
 	ifstream bb_file(path);
 
 	while (getline(bb_file, line)) {
-		
-		//cout << line<<"\n";
+
+		cout << line << "\n";
 		line_vec.push_back(line);
 	}
 	for (int i = 0; i < line_vec.size(); i++) {
@@ -107,26 +105,26 @@ vector<array<int, 4>> Segmentation::read_bb_file(string path)
 		int cordinate_counter = 0;
 		array<int, 4> cordinates;
 		while (getline(stringstream, parsed, '	')) {
-				
+
 			if (cordinate_counter == 4) {
-				cout << "unable to read bounding box file";
-				exit(1); 
+				cout << "unable to read bounding box file: more that 4 cordinates";
+				exit(1);
 			}
-			
+
 			int c = stoi(parsed);
-			//cout << i << " : " << c << "\n";
+			cout << i << " : " << c << "\n";
 			cordinates[cordinate_counter] = c;
 			cordinate_counter++;
-		}	
+		}
 		if (cordinate_counter < 4) {
-			cout << "unable to read bounding box file";
+			cout << "unable to read bounding box file: less that 4 cordinates " << cordinate_counter;
 			exit(1);
 		}
 		boxes.push_back(cordinates);
 	}
-	
+
 	return boxes;
-		
+
 }
 
 /*
@@ -141,7 +139,7 @@ The GrabCut algorithm is performed considering the source image in the YCrCb col
 void Segmentation::draw_segmentation_GB(cv::Mat src, cv::Mat& dst, vector<array<int, 4>> bound_boxes)
 {
 	Mat src_ycc, gaus_blurred;
-	
+
 	//GaussianBlur(src, gaus_blurred, Size(7, 7), 0);
 
 	dst = src.clone();
@@ -178,13 +176,13 @@ void Segmentation::draw_segmentation_GB(cv::Mat src, cv::Mat& dst, vector<array<
 			corr = mask(Rect(x + w - dimBG, y + h - dimBG, dimBG, dimBG));
 			corr.setTo(Scalar(GC_BGD));
 		}*/
-		
+
 		// nota: leggermente più preciso aumentando iterazioni ma molto più lento
 		grabCut(src_ycc, mask, Rect(x, y, w, h), bg1, fg1, 1, GC_INIT_WITH_MASK);
-	
+
 		for (int i = 0; i < src.rows; i++) {
 			for (int j = 0; j < src.cols; j++) {
-				if ( mask.at<unsigned char>(i, j) == GC_PR_FGD ||mask.at<unsigned char>(i, j) == GC_FGD) {
+				if (mask.at<unsigned char>(i, j) == GC_PR_FGD || mask.at<unsigned char>(i, j) == GC_FGD) {
 					dst.at<Vec3b>(i, j) = colors[k];
 				}
 
@@ -193,6 +191,59 @@ void Segmentation::draw_segmentation_GB(cv::Mat src, cv::Mat& dst, vector<array<
 	}
 
 }
+
+void Segmentation::draw_segmentation_GB_mask(cv::Mat src, cv::Mat& dst, cv::Mat mask, std::vector<std::array<int, 4>> bound_boxes)
+{
+	//Mat maskc = mask.clone();
+
+
+	Mat src_ycc, gaus_blurred;
+
+	//GaussianBlur(src, gaus_blurred, Size(7, 7), 0);
+
+	dst = src.clone();
+	cvtColor(src, src_ycc, COLOR_BGR2YCrCb, 0);
+	for (int k = 0; k < bound_boxes.size(); k++) {
+
+		int x = bound_boxes[k][0];
+		int y = bound_boxes[k][1];
+		int w = bound_boxes[k][2];
+		int h = bound_boxes[k][3];
+
+		Mat  bg1, fg1;
+		Mat label_mask = Mat(mask.rows, mask.cols, CV_8UC1, GC_BGD);
+		Mat roi(mask(Rect(x, y, w, h)));
+		Mat label_roi(label_mask(Rect(x, y, w, h)));
+
+		for (int i = 0; i < roi.rows; i++) {
+			for (int j = 0; j < roi.cols; j++) {
+
+				if (roi.at<unsigned char>(i, j) == 255) {
+					label_roi.at<unsigned char>(i, j) = GC_PR_FGD;
+				}
+				else label_roi.at<unsigned char>(i, j) = GC_PR_BGD;
+
+			}
+		}
+
+
+		// nota: leggermente più preciso aumentando iterazioni ma molto più lento
+		grabCut(src_ycc, label_mask, Rect(x, y, w, h), bg1, fg1, 1, GC_INIT_WITH_MASK);
+
+		for (int i = 0; i < src.rows; i++) {
+			for (int j = 0; j < src.cols; j++) {
+				if (label_mask.at<unsigned char>(i, j) == GC_PR_FGD || label_mask.at<unsigned char>(i, j) == GC_FGD) {
+					dst.at<Vec3b>(i, j) = colors[k];
+				}
+
+			}
+		}
+	}
+
+
+}
+
+
 
 /*
 method that draw the specified bounding boxes into the image provided by src and save the result into dst
@@ -211,8 +262,8 @@ void Segmentation::draw_box_image(cv::Mat src, cv::Mat& dst, vector<array<int, 4
 		int y = bound_boxes[k][1];
 		int w = bound_boxes[k][2];
 		int h = bound_boxes[k][3];
-		rectangle(dst, Point(x, y), Point(x + w, y + h), Scalar(0, 0, 255), 1, 1);
-	
+		rectangle(dst, Point(x, y), Point(x + w, y + h), colors[k] * 0.6, 1, 1);
+
 	}
 }
 
@@ -234,24 +285,24 @@ void Segmentation::difference_from_center(cv::Mat src, cv::Mat& dst, vector<arra
 	cvtColor(averaged, averaged, COLOR_BGR2YCrCb, 0);
 
 	vector <Vec3b> center_value;
-	array <float, 3> channel_sum = {0.0,0.0,0.0};
+	array <float, 3> channel_sum = { 0.0,0.0,0.0 };
 	Vec3b center_value_mean;
 
 	for (int k = 0; k < bound_boxes.size(); k++) {
-		
+
 		int x = bound_boxes[k][0];
 		int y = bound_boxes[k][1];
 		int w = bound_boxes[k][2];
 		int h = bound_boxes[k][3];
-		
+
 		/*
 		namedWindow("cl", WINDOW_AUTOSIZE);
 		imshow("cl", averaged);
 		waitKey(0);
 		*/
-		
+
 		Mat roi(averaged(Rect(x, y, w, h)));
-		center_value.push_back(roi.at<Vec3b>(h / 2, w / 2) );
+		center_value.push_back(roi.at<Vec3b>(h / 2, w / 2));
 	}
 
 	for (int k = 0; k < bound_boxes.size(); k++) {
@@ -274,10 +325,42 @@ void Segmentation::difference_from_center(cv::Mat src, cv::Mat& dst, vector<arra
 	}
 	cvtColor(difference, difference, COLOR_BGR2GRAY, 0);
 	//intensity_transform::logTransform(difference, difference);
-	GaussianBlur(difference, difference, Size(3,3), 0);
-	
+	GaussianBlur(difference, difference, Size(3, 3), 0);
+
 	dst = difference;
 }
+
+void Segmentation::treshold_difference(cv::Mat difference, cv::Mat& dst, std::vector<std::array<int, 4>> bound_boxes)
+{
+	dst = difference.clone();
+	vector<Mat> thresholded_boxes;
+	for (int k = 0; k < bound_boxes.size(); k++) {
+
+		int x = bound_boxes[k][0];
+		int y = bound_boxes[k][1];
+		int w = bound_boxes[k][2];
+		int h = bound_boxes[k][3];
+		/*
+		namedWindow("cl", WINDOW_AUTOSIZE);
+		imshow("cl", averaged);
+		waitKey(0);
+		*/
+		Mat roi(difference(Rect(x, y, w, h)));
+		Mat thresholded_roi;
+		threshold(roi, thresholded_roi, 1, 255, THRESH_BINARY_INV + THRESH_OTSU);
+		thresholded_boxes.push_back(thresholded_roi);
+	}
+
+	for (int k = 0; k < bound_boxes.size(); k++) {
+		//dst(Rect(bound_boxes[k][0], bound_boxes[k][1], bound_boxes[k][2], bound_boxes[k][3])) = thresholded_boxes[k];
+		thresholded_boxes[k].copyTo(dst(Rect(bound_boxes[k][0], bound_boxes[k][1], bound_boxes[k][2], bound_boxes[k][3])));
+	}
+
+
+
+}
+
+
 
 
 //codice per calcolo laplacian
@@ -297,5 +380,9 @@ namedWindow("sharp", WINDOW_AUTOSIZE);
 imshow("sharp", imgResult);
 waitKey(0);
 */
+
+
+
+
 
 

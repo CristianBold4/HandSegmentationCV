@@ -12,10 +12,10 @@ public:
 	std::vector<std::array<int, 4>>  read_bb_file(std::string path);
 	void crop(cv::Mat src, cv::Mat& dst, std::array<int, 4>);
 	void  draw_segmentation_Km(cv::Mat src, cv::Mat& dst, std::vector<std::array<int, 4>> bound_boxes);
-	
+	void draw_segmentation_GB_mask(cv::Mat src, cv::Mat& dst, cv::Mat mask, std::vector<std::array<int, 4>> bound_boxes);
 	void draw_segmentation_GB(cv::Mat src, cv::Mat& dst, std::vector<std::array<int, 4>> bound_boxes);
 	void draw_box_image(cv::Mat src, cv::Mat& dst, std::vector<std::array<int, 4>> bound_boxes);
-	
+	void treshold_difference(cv::Mat difference, cv::Mat& dst, std::vector<std::array<int, 4>> bound_boxes);
 	void difference_from_center(cv::Mat src, cv::Mat& dst, std::vector<std::array<int, 4>> bound_boxes);
 	
 };
