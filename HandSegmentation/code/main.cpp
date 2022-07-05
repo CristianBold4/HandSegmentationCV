@@ -8,8 +8,8 @@ using namespace cv;
 
 int main(int argc, char ** argv) {
 
-    string bb_path = "../det/12.txt";
-    Mat src = imread("../rgb/12.jpg");
+    string bb_path = "../det/01.txt";
+    Mat src = imread("../rgb/01.jpg");
 
     if (src.empty()) {
         cerr << "Error! Input image is empty\n";

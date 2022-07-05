@@ -55,7 +55,7 @@
 				}
 			],
 			"type" : "INTERNAL",
-			"value" : "c:/Users/Cristian/Desktop/LAB7/HandSegmentation/cmake-build-debug"
+			"value" : "c:/Users/Cristian/Desktop/Università/4 anno/Secondo Semestre/Computer Vision/Final project/github/HandSegmentation/cmake-build-debug"
 		},
 		{
 			"name" : "CMAKE_CACHE_MAJOR_VERSION",
@@ -623,7 +623,7 @@
 				}
 			],
 			"type" : "INTERNAL",
-			"value" : "C:/Users/Cristian/Desktop/LAB7/HandSegmentation"
+			"value" : "C:/Users/Cristian/Desktop/Università/4 anno/Secondo Semestre/Computer Vision/Final project/github/HandSegmentation"
 		},
 		{
 			"name" : "CMAKE_INSTALL_PREFIX",
@@ -635,7 +635,7 @@
 				}
 			],
 			"type" : "PATH",
-			"value" : "C:/Program Files (x86)/ImageStitching"
+			"value" : "C:/Program Files (x86)/HandSegmentation"
 		},
 		{
 			"name" : "CMAKE_LINKER",
@@ -1251,7 +1251,7 @@
 				}
 			],
 			"type" : "STATIC",
-			"value" : "C:/Users/Cristian/Desktop/LAB7/HandSegmentation/cmake-build-debug"
+			"value" : "C:/Users/Cristian/Desktop/Università/4 anno/Secondo Semestre/Computer Vision/Final project/github/HandSegmentation/cmake-build-debug"
 		},
 		{
 			"name" : "HandSegmentation_IS_TOP_LEVEL",
@@ -1275,43 +1275,7 @@
 				}
 			],
 			"type" : "STATIC",
-			"value" : "C:/Users/Cristian/Desktop/LAB7/HandSegmentation"
-		},
-		{
-			"name" : "ImageStitching_BINARY_DIR",
-			"properties" : 
-			[
-				{
-					"name" : "HELPSTRING",
-					"value" : "Value Computed by CMake"
-				}
-			],
-			"type" : "STATIC",
-			"value" : "C:/Users/Cristian/Desktop/LAB7/HandSegmentation/cmake-build-debug"
-		},
-		{
-			"name" : "ImageStitching_IS_TOP_LEVEL",
-			"properties" : 
-			[
-				{
-					"name" : "HELPSTRING",
-					"value" : "Value Computed by CMake"
-				}
-			],
-			"type" : "STATIC",
-			"value" : "ON"
-		},
-		{
-			"name" : "ImageStitching_SOURCE_DIR",
-			"properties" : 
-			[
-				{
-					"name" : "HELPSTRING",
-					"value" : "Value Computed by CMake"
-				}
-			],
-			"type" : "STATIC",
-			"value" : "C:/Users/Cristian/Desktop/LAB7/HandSegmentation"
+			"value" : "C:/Users/Cristian/Desktop/Università/4 anno/Secondo Semestre/Computer Vision/Final project/github/HandSegmentation"
 		},
 		{
 			"name" : "OpenCV_DIR",
