@@ -8,75 +8,60 @@ using namespace cv;
 
 int main(int argc, char ** argv) {
 	Segmentation seg = Segmentation();
-    string bb_path = "../../../det/01.txt";
-    Mat src = imread("../../../rgb/01.jpg");
-	Mat gt_mask = imread("../../../mask/01.png");
-	cvtColor(gt_mask, gt_mask, COLOR_BGR2GRAY);
+	string bb_path, rgb_path, mask_path;
+	vector<int> test_indeces = { 1,2,13 };	//use this vector to choose images from test dataset
+	int test_image_num = 1;
+	for (int k = 0; k < test_indeces.size(); k++) {
+		test_image_num = test_indeces[k];
 
+		if (test_image_num < 10) {
+			bb_path = "../../../det/0" + to_string(test_image_num) + ".txt";
+			rgb_path = "../../../rgb/0" + to_string(test_image_num) + ".jpg";
+			mask_path = "../../../mask/0" + to_string(test_image_num) + ".png";
+		}
+		else {
+			bb_path = "../../../det/" + to_string(test_image_num) + ".txt";
+			rgb_path = "../../../rgb/" + to_string(test_image_num) + ".jpg";
+			mask_path = "../../../mask/" + to_string(test_image_num) + ".png";
+		}
 
-	Mat gt_segmentation;
-	seg.apply_mask(src, gt_segmentation, gt_mask);
-	namedWindow("GT segmentation", WINDOW_AUTOSIZE);
-	imshow("GT segmentation", gt_segmentation);
-	waitKey(0);
-	
-    if (src.empty()) {
-        cerr << "Error! Input image is empty\n";
-    }
-   
-    Mat segmented, boxed, clustered;
+		Mat src = imread(rgb_path);
+		Mat gt_mask = imread(mask_path);
+		if (src.empty()) {
+			cerr << "TEST IMG " << to_string(test_image_num) << ": " << "Error! Input image is empty\n";
+		}
+		if (gt_mask.empty()) {
+			cerr << "TEST IMG " << to_string(test_image_num) << ": " << "Error! ground truth mask image is empty\n";
+		}
+		vector<array<int, 4>> boxes_vec = seg.read_bb_file(bb_path);
 
-    vector<array<int, 4>> boxes_vec;
-    boxes_vec = seg.read_bb_file(bb_path);
+		Mat gt_segmentation;
+		seg.apply_mask(src, gt_segmentation, gt_mask, true);
+		seg.show_image(gt_segmentation, to_string(test_indeces[k]) +") GT segmentation");
 
-    //show source image with bounding boxes
-    seg.draw_box_image(src, boxed, boxes_vec);
-    //namedWindow("src", WINDOW_AUTOSIZE);
-    //imshow("src", boxed);
-    //waitKey(0);
+		//compute difference image
+		Mat difference, tres_diff, gb_th;
+		seg.difference_from_center(src, difference, boxes_vec);
+		//seg.show_image(difference, test_indeces[k]) +"difference from skin");
 
-	// segmentation with k-means
-	seg.draw_segmentation_Km(src, segmented, boxes_vec);
-	//namedWindow("segmentation", WINDOW_AUTOSIZE);
-	//imshow("segmentation", segmented);
-	//waitKey(0);
-	
-	//compute difference image
-	Mat difference, tres_diff, tres_diff_bb, gb_th;
-	seg.difference_from_center(src, difference, boxes_vec);
-	//namedWindow("diff", WINDOW_AUTOSIZE);
-	//imshow("diff", difference);
-	//waitKey(0);
+		seg.treshold_difference(difference, tres_diff, boxes_vec);
+		//seg.show_image(tres_diff, test_indeces[k]) +"difference tresholded");
 
-	seg.treshold_difference(difference, tres_diff, boxes_vec);
-	//namedWindow("tf", WINDOW_AUTOSIZE);
-	//imshow("tf", tres_diff);
-	//waitKey(0);
+		seg.draw_segmentation_GB_mask(src, gb_th, tres_diff, boxes_vec);
+		//seg.show_image(gb_th,test_indeces[k]) + "GB mask");
 
-	seg.draw_segmentation_GB_mask(src, gb_th, tres_diff, boxes_vec);
-	//namedWindow("gbmask", WINDOW_AUTOSIZE);
-	//imshow("gbmask", gb_th);
-	//waitKey(0);
+		seg.apply_mask(src, gb_th, gb_th, false);
+		//seg.show_image(gb_th, test_indeces[k]) +"GB-mask segmentation");
 
-	seg.draw_box_image(gb_th, gb_th, boxes_vec);
-	namedWindow("my segmentation", WINDOW_AUTOSIZE);
-	imshow("my segmentation", gb_th);
-	waitKey(0);
+		cvtColor(gt_mask, gt_mask, COLOR_BGR2GRAY);
+		float pixel_accuracy = seg.compute_pixel_accuracy(tres_diff, gt_mask);
+		cout << "TEST IMG " << to_string(test_image_num) << ": " << "pixel accuracy : " << pixel_accuracy << " \n";
 
-	float pixel_accuracy = seg.compute_pixel_accuracy(tres_diff, gt_mask);
-	cout << "Segmentation test results\n";
-	cout << "pixel accuracy: " << pixel_accuracy << " \n";
-
-	//namedWindow("mask", WINDOW_AUTOSIZE);
-	//imshow("mask", tres_diff);
-	//waitKey(0);
-
-	//namedWindow("GT mask", WINDOW_AUTOSIZE);
-	//imshow("GT mask", gt_mask);
-	//waitKey(0);
+		seg.draw_box_image(gb_th, gb_th, boxes_vec);
+		seg.show_image(gb_th, to_string(test_indeces[k]) + ") GB-mask segmentation+bb");
+	}
 
     return 0;
-	
 }
 
 

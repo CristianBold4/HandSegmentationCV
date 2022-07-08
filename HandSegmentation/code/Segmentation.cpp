@@ -7,6 +7,13 @@ using namespace cv;
 using namespace std;
 
 
+void Segmentation::show_image(Mat to_show, string window_name)
+{
+	namedWindow(window_name, WINDOW_AUTOSIZE);
+	imshow(window_name, to_show);
+	waitKey(0);
+}
+
 /*
 method that parse the txt file that contains the bounding boxes cordinates and return an array containing such cordinates
 The cordinates are expressed as : [ (top-lef corner x cordinate), (top-lef corner y cordinate), (width), (heigth) ]
@@ -83,18 +90,23 @@ method that draw the specified mask (in red) into the image provided by src and 
 @param mask the mask to be drawn
 
 **/
-void Segmentation::apply_mask(cv::Mat src, cv::Mat& dst, cv::Mat& mask)
+void Segmentation::apply_mask(cv::Mat src, cv::Mat& dst, cv::Mat mask, bool same_color)
 {
-	dst = src.clone();
+	
+	if (same_color) {
+		//dst = src.clone();
 
-	for (int i = 0; i < mask.rows; i++) {
-		for (int j = 0; j < mask.cols; j++) {
-
-			if (mask.at<unsigned char>(i, j) == 255) {
-				multiply(dst.at<Vec3b>(i, j), trasparency_colors[2], dst.at<Vec3b>(i, j));
+		for (int i = 0; i < mask.rows; i++) {
+			for (int j = 0; j < mask.cols; j++) {
+				Vec3b color = mask.at<Vec3b>(i, j);
+				if (color[0] != 0 || color[1] != 0 || color[2] != 0) {
+					mask.at<Vec3b>(i, j) = colors[0];
+				}
 			}
 		}
 	}
+	double alpha = 0.5;
+	addWeighted(src, 1, mask, 0.7, 0.0, dst);
 }
 
 /*
@@ -175,7 +187,7 @@ void Segmentation::draw_segmentation_GB(cv::Mat src, cv::Mat& dst, vector<array<
 
 	//GaussianBlur(src, gaus_blurred, Size(7, 7), 0);
 
-	dst = src.clone();
+	dst = Mat::zeros(src.rows, src.cols, CV_8UC3);
 	cvtColor(src, src_ycc, COLOR_BGR2YCrCb, 0);
 	for (int k = 0; k < bound_boxes.size(); k++) {
 		int x = bound_boxes[k][0];
@@ -240,7 +252,7 @@ void Segmentation::draw_segmentation_GB_mask(cv::Mat src, cv::Mat& dst, cv::Mat&
 {
 	
 	Mat src_ycc, gaus_blurred;
-	dst = src.clone();
+	dst = Mat::zeros(src.rows, src.cols, CV_8UC3);
 	cvtColor(src, src_ycc, COLOR_BGR2YCrCb, 0);
 	Mat out_mask = Mat::zeros(mask.rows, mask.cols, CV_8UC1);
 
@@ -258,23 +270,20 @@ void Segmentation::draw_segmentation_GB_mask(cv::Mat src, cv::Mat& dst, cv::Mat&
 
 		for (int i = 0; i < roi.rows; i++) {
 			for (int j = 0; j < roi.cols; j++) {
-
 				if (roi.at<unsigned char>(i, j) == 255) {
 					label_roi.at<unsigned char>(i, j) = GC_PR_FGD;
 				}
 				else label_roi.at<unsigned char>(i, j) = GC_PR_BGD;
-
 			}
 		}
-
 		// nota: leggermente più preciso aumentando iterazioni ma molto più lento
 		grabCut(src_ycc, label_mask, Rect(x, y, w, h), bg1, fg1, 1, GC_INIT_WITH_MASK);
 
-		
 		for (int i = 0; i < dst.rows; i++) {
 			for (int j = 0; j < dst.cols; j++) {
 				if (label_mask.at<unsigned char>(i, j) == GC_PR_FGD || label_mask.at<unsigned char>(i, j) == GC_FGD) {
-					 multiply( dst.at<Vec3b>(i, j), trasparency_colors[k], dst.at<Vec3b>(i, j));
+					 //multiply( dst.at<Vec3b>(i, j), trasparency_colors[k], dst.at<Vec3b>(i, j));
+					dst.at<Vec3b>(i, j) = colors[k];
 					out_mask.at<unsigned char>(i, j) = 255;
 				}
 			}
@@ -297,7 +306,8 @@ The skin color is computed by considering the average color of the central pixel
 void Segmentation::difference_from_center(cv::Mat src, cv::Mat& dst, vector<array<int, 4>> bound_boxes)
 {
 	Mat averaged, difference, src_ycc;
-	difference = src.clone();
+	difference = Mat(src.rows, src.cols, CV_8U);
+	//difference = src.clone();
 	blur(src, averaged, Size(21,21));
 	cvtColor(src, src_ycc, COLOR_BGR2YCrCb, 0);
 	cvtColor(averaged, averaged, COLOR_BGR2YCrCb, 0);
@@ -313,12 +323,6 @@ void Segmentation::difference_from_center(cv::Mat src, cv::Mat& dst, vector<arra
 		int w = bound_boxes[k][2];
 		int h = bound_boxes[k][3];
 
-		/*
-		namedWindow("cl", WINDOW_AUTOSIZE);
-		imshow("cl", averaged);
-		waitKey(0);
-		*/
-
 		Mat roi(averaged(Rect(x, y, w, h)));
 		center_value.push_back(roi.at<Vec3b>(h / 2, w / 2));
 	}
@@ -332,18 +336,25 @@ void Segmentation::difference_from_center(cv::Mat src, cv::Mat& dst, vector<arra
 	center_value_mean[1] = uchar(channel_sum[1] / bound_boxes.size());
 	center_value_mean[2] = uchar(channel_sum[2] / bound_boxes.size());
 
-	for (int i = 0; i < src_ycc.rows; i++) {
-		for (int j = 0; j < src_ycc.cols; j++) {
-			difference.at<Vec3b>(i, j)[0] = 0; //abs(center_value_mean[0] - src.at<Vec3b>(i, j)[0]);
+	for (int i = 0; i < src.rows; i++) {
+		for (int j = 0; j < src.cols; j++) {
+			/*
+			difference.at<Vec3b>(i, j)[0] = 50; // abs(center_value_mean[0] - src_ycc.at<Vec3b>(i, j)[0]);
 			difference.at<Vec3b>(i, j)[1] = abs(center_value_mean[1] - src_ycc.at<Vec3b>(i, j)[1]);
-			difference.at<Vec3b>(i, j)[2] =  abs(center_value_mean[2] - src_ycc.at<Vec3b>(i, j)[2]);
+			difference.at<Vec3b>(i, j)[2] = abs(center_value_mean[2] - src_ycc.at<Vec3b>(i, j)[2]);
+			*/
+			//
+			float cvm[2];
+			cvm[0] = abs(center_value_mean[1] - src_ycc.at<Vec3b>(i, j)[1]) ;
+			cvm[1] = abs(center_value_mean[2] - src_ycc.at<Vec3b>(i, j)[2]) ;
+			difference.at<unsigned char>(i, j) = (cvm[0] + cvm[1])/2;
 		}
 	}
 	
-	cvtColor(difference, difference, COLOR_YCrCb2BGR, 0);
-	cvtColor(difference, difference, COLOR_BGR2GRAY, 0);
+	//cvtColor(difference, difference, COLOR_YCrCb2BGR, 0);
+	//cvtColor(difference, difference, COLOR_BGR2GRAY, 0);
 	//intensity_transform::logTransform(difference, difference);
-	GaussianBlur(difference, difference, Size(21,21), 0);
+	GaussianBlur(difference, difference, Size(11,11), 0);
 	dst = difference;
 }
 
@@ -360,6 +371,7 @@ The treshold is performed separately inside each boxes, exploiting the OTSU meth
 **/
 void Segmentation::treshold_difference(cv::Mat difference, cv::Mat& dst, std::vector<std::array<int, 4>> bound_boxes)
 {
+	int hand_labels[4] = { 255,200,150,100 };
 	dst = difference.clone();
 	vector<Mat> thresholded_boxes;
 	for (int k = 0; k < bound_boxes.size(); k++) {
@@ -380,7 +392,8 @@ void Segmentation::treshold_difference(cv::Mat difference, cv::Mat& dst, std::ve
 		
 		//two alternatives
 		//threshold(roi, thresholded_roi, minVal*1.4, 255, THRESH_BINARY_INV);
-		threshold(roi, thresholded_roi, 1, 255, THRESH_BINARY + THRESH_OTSU);
+		threshold(roi, thresholded_roi, 1, 255, THRESH_BINARY_INV + THRESH_OTSU);
+	
 		thresholded_boxes.push_back(thresholded_roi);
 	}
 
