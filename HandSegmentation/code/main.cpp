@@ -14,6 +14,13 @@ int main(int argc, char ** argv) {
 	for (int k = 0; k < test_indeces.size(); k++) {
 		test_image_num = test_indeces[k];
 
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+    string bb_path = "../det/20.txt";
+    Mat src = imread("../rgb/20.jpg");
+=======
+>>>>>>> Stashed changes
 		if (test_image_num < 10) {
 			bb_path = "../../../det/0" + to_string(test_image_num) + ".txt";
 			rgb_path = "../../../rgb/0" + to_string(test_image_num) + ".jpg";
@@ -63,6 +70,10 @@ int main(int argc, char ** argv) {
 
     return 0;
 }
+<<<<<<< Updated upstream
+=======
+>>>>>>> 464476dd7b3d1a3389ca31fb7f1e17ca145c3918
+>>>>>>> Stashed changes
 
 
 
