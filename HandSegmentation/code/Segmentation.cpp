@@ -1,7 +1,8 @@
 #include "Segmentation.h"
 #include <iostream>
 #include <fstream>
-#include <opencv2/intensity_transform.hpp>
+
+#include <opencv2/ximgproc/lsc.hpp>
 
 using namespace cv;
 using namespace std;
@@ -92,21 +93,21 @@ method that draw the specified mask (in red) into the image provided by src and 
 **/
 void Segmentation::apply_mask(cv::Mat src, cv::Mat& dst, cv::Mat mask, bool same_color)
 {
-	
+	Mat mask_copy = mask.clone();
 	if (same_color) {
 		//dst = src.clone();
 
 		for (int i = 0; i < mask.rows; i++) {
 			for (int j = 0; j < mask.cols; j++) {
-				Vec3b color = mask.at<Vec3b>(i, j);
+				Vec3b color = mask_copy.at<Vec3b>(i, j);
 				if (color[0] != 0 || color[1] != 0 || color[2] != 0) {
-					mask.at<Vec3b>(i, j) = colors[0];
+					mask_copy.at<Vec3b>(i, j) = colors[0];
 				}
 			}
 		}
 	}
 	double alpha = 0.5;
-	addWeighted(src, 1, mask, 0.7, 0.0, dst);
+	addWeighted(src, 1, mask_copy, 0.7, 0.0, dst);
 }
 
 /*
@@ -254,6 +255,7 @@ void Segmentation::draw_segmentation_GB_mask(cv::Mat src, cv::Mat& dst, cv::Mat&
 	Mat src_ycc, gaus_blurred;
 	dst = Mat::zeros(src.rows, src.cols, CV_8UC3);
 	cvtColor(src, src_ycc, COLOR_BGR2YCrCb, 0);
+	GaussianBlur(src_ycc, src_ycc, Size(5,5), 0);
 	Mat out_mask = Mat::zeros(mask.rows, mask.cols, CV_8UC1);
 
 	for (int k = 0; k < bound_boxes.size(); k++) {
@@ -277,14 +279,32 @@ void Segmentation::draw_segmentation_GB_mask(cv::Mat src, cv::Mat& dst, cv::Mat&
 			}
 		}
 		// nota: leggermente più preciso aumentando iterazioni ma molto più lento
-		grabCut(src_ycc, label_mask, Rect(x, y, w, h), bg1, fg1, 1, GC_INIT_WITH_MASK);
-
+		grabCut(src_ycc, label_mask, Rect(x, y, w, h), bg1, fg1, 2, GC_INIT_WITH_MASK);
+		Vec3b black(0, 0, 0);
 		for (int i = 0; i < dst.rows; i++) {
 			for (int j = 0; j < dst.cols; j++) {
 				if (label_mask.at<unsigned char>(i, j) == GC_PR_FGD || label_mask.at<unsigned char>(i, j) == GC_FGD) {
-					 //multiply( dst.at<Vec3b>(i, j), trasparency_colors[k], dst.at<Vec3b>(i, j));
-					dst.at<Vec3b>(i, j) = colors[k];
 					out_mask.at<unsigned char>(i, j) = 255;
+					dst.at<Vec3b>(i, j) = colors[k];
+					/*
+					if (dst.at<Vec3b>(i, j) == black) {
+						dst.at<Vec3b>(i, j) = colors[k];
+					}
+					else {
+						Vec3b found_color = dst.at<Vec3b>(i, j);
+						array<cv::Vec3b, 4>::iterator it = find(colors.begin(), colors.end(), found_color);
+						int found_index = it - colors.begin();
+						array<int, 4> found_bb = bound_boxes[found_index];
+						array<int, 2> center_k = { x + w / 2, y + h / 2 };
+						array<int, 2> center_found = { found_bb[0] + found_bb[2] / 2,  found_bb[1] + found_bb[3] / 2 };
+						float distance_k = sqrt((j - center_k[0]) ^ 2 + (i - center_k[1]) ^ 2);
+						float distance_bb = sqrt((j - center_found[0]) ^ 2 + (i - center_found[1]) ^ 2);
+					
+						if (h*w > found_bb[2]* found_bb[3]) { dst.at<Vec3b>(i, j) = colors[k]; }
+						else { dst.at<Vec3b>(i, j) = colors[found_index];  }
+					}*/
+					
+					
 				}
 			}
 		}
@@ -293,6 +313,51 @@ void Segmentation::draw_segmentation_GB_mask(cv::Mat src, cv::Mat& dst, cv::Mat&
 }
 
 
+
+void Segmentation::difference_from_center_hand(cv::Mat src, cv::Mat& dst, std::vector<std::array<int, 4>> bound_boxes)
+{
+
+	Mat averaged, difference, src_ycc;
+	difference = Mat::zeros(src.rows, src.cols, CV_8U);
+	//difference = src.clone();
+	//blur(src, averaged, Size(1, 1));
+	cvtColor(src, src_ycc, COLOR_BGR2YCrCb, 0);
+	//cvtColor(averaged, averaged, COLOR_BGR2YCrCb, 0);
+
+	vector <Vec3b> center_value;
+	array <float, 3> channel_sum = { 0.0,0.0,0.0 };
+	Vec3b center_value_mean;
+
+	for (int k = 0; k < bound_boxes.size(); k++) {
+
+		int x = bound_boxes[k][0];
+		int y = bound_boxes[k][1];
+		int w = bound_boxes[k][2];
+		int h = bound_boxes[k][3];
+
+		Mat roi(src_ycc(Rect(x, y, w, h)));
+		Mat diff_roi(difference(Rect(x, y, w, h)));
+		Vec3b center_val = roi.at<Vec3b>(h / 2, w / 2);
+		center_value.push_back(roi.at<Vec3b>(h / 2, w / 2));
+
+		for (int i = 0; i < diff_roi.rows; i++) {
+			for (int j = 0; j < diff_roi.cols; j++) {
+
+				float cvd[2];
+				cvd[0] = abs(center_val[1] - roi.at<Vec3b>(i, j)[1]);
+				cvd[1] = abs(center_val[2] - roi.at<Vec3b>(i, j)[2]);
+				diff_roi.at<unsigned char>(i, j) = (cvd[0] + cvd[1]) / 2;
+			}
+		}
+		
+	}
+
+	//cvtColor(difference, difference, COLOR_YCrCb2BGR, 0);
+	//cvtColor(difference, difference, COLOR_BGR2GRAY, 0);
+	//intensity_transform::logTransform(difference, difference);
+	GaussianBlur(difference, difference, Size(11,11), 0);
+	dst = difference;
+}
 
 /*
 method that compute the difference between each pixel of the src image and the approssimated value of the skin color and saves it into the dst image.
@@ -422,6 +487,50 @@ float Segmentation::compute_pixel_accuracy(cv::Mat mask, cv::Mat ground_th)
 	}
 	float accuracy = correctly_classified / (mask.rows * mask.cols);
 	return accuracy;
+}
+
+
+void Segmentation::get_superpixel_image(cv::Mat src, cv::Mat& dst)
+{
+	dst = Mat(src.rows, src.cols, CV_8UC3);
+	Mat src_blurr,labels;
+	Mat sp(src.rows, src.cols, CV_8U);
+	GaussianBlur(src, src_blurr, Size(3, 3),0);
+	cvtColor(src_blurr, src_blurr, COLOR_BGR2Lab);
+	Ptr<ximgproc::SuperpixelLSC> spLSC = ximgproc::createSuperpixelLSC(src_blurr,5 );
+	spLSC->iterate();
+	spLSC->getLabels(labels);
+	int sp_num = spLSC->getNumberOfSuperpixels();
+	vector<Vec<float, 3>> label_sum(sp_num, Vec<float, 3>(0.0,0.0,0.0));
+	vector<float> label_counter(sp_num, 0.0);
+	float label_avg[3];
+
+	for (int i = 0; i < labels.rows; i++) {
+		for (int j = 0; j < labels.cols; j++) {
+			int label = labels.at<int>(i, j);
+			label_counter[label] += 1.0;
+			label_sum[label][0] += src.at<Vec3b>(i, j)[0];
+			label_sum[label][1] += src.at<Vec3b>(i, j)[1];
+			label_sum[label][2] += src.at<Vec3b>(i, j)[2];
+		}
+	}
+	
+	for (int i = 0; i < sp_num; i++) {
+		label_sum[i][0] = label_sum[i][0] / label_counter[i];
+		label_sum[i][1] = label_sum[i][1] / label_counter[i];
+		label_sum[i][2] = label_sum[i][2] / label_counter[i];
+	}
+
+	for (int i = 0; i < labels.rows; i++) {
+		for (int j = 0; j < labels.cols; j++) {
+			int label = labels.at<int>(i, j);
+			dst.at<Vec3b>(i, j)[0] = unsigned char(label_sum[label][0]);
+			dst.at<Vec3b>(i, j)[1] = unsigned char(label_sum[label][1]);
+			dst.at<Vec3b>(i, j)[2] = unsigned char(label_sum[label][2]);
+
+		}
+	}
+
 }
 
 
