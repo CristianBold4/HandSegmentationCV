@@ -1,7 +1,8 @@
 ## Hand detection algorithm based on Yolov5 model for object detection
 
 Hand detection algorithm based on Yolov5 model for object detection
-Requirements
+
+Requirements:
 - OpenCV >= 4.5.2
 - GCC compiler
 
