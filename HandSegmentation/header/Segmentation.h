@@ -11,8 +11,10 @@ private:
 public:
 	
 	void show_image(cv::Mat to_show, std::string window_name);
-	std::vector<std::array<int, 4>>  read_bb_file(std::string path);
+	void  read_bb_file(std::string path, std::vector<std::array<int, 4>>& bb_vector);
+	void read_bb_file_label(std::string path, std::vector<std::array<int, 4>>& bb_vector, std::vector<int>& class_labels);
 	void draw_box_image(cv::Mat src, cv::Mat& dst, std::vector<std::array<int, 4>> bound_boxes);
+	void draw_box_image_label(cv::Mat src, cv::Mat& dst, std::vector<std::array<int, 4>> bound_boxes, std::vector<int> labels, bool show_color_point);
 	void apply_mask(cv::Mat src, cv::Mat& dst, cv::Mat mask, bool same_color);
 	
 	void draw_segmentation_Km(cv::Mat src, cv::Mat& dst, cv::Mat& bin_mask, std::vector<std::array<int, 4>> bound_boxes);
@@ -20,6 +22,7 @@ public:
 	void draw_segmentation_GB_mask(cv::Mat src, cv::Mat& dst, cv::Mat& mask, std::vector<std::array<int, 4>> bound_boxes);
 	
 	void difference_from_center_hand(cv::Mat src, cv::Mat& dst, std::vector<std::array<int, 4>> bound_boxes);
+	void difference_from_center_hand_label(cv::Mat src, cv::Mat& dst, std::vector<std::array<int, 4>> bound_boxes, std::vector<int>& class_labels);
 	void difference_from_center(cv::Mat src, cv::Mat& dst, std::vector<std::array<int, 4>> bound_boxes);
 	void treshold_difference(cv::Mat difference, cv::Mat& dst, std::vector<std::array<int, 4>> bound_boxes);
 	float compute_pixel_accuracy(cv::Mat mask, cv::Mat ground_th);

@@ -19,10 +19,10 @@ void Segmentation::show_image(Mat to_show, string window_name)
 method that parse the txt file that contains the bounding boxes cordinates and return an array containing such cordinates
 The cordinates are expressed as : [ (top-lef corner x cordinate), (top-lef corner y cordinate), (width), (heigth) ]
 
-@param path path of the txt file that contains the bounding boxes cordinates.
-@return a vector of array, each array containing the cordinates of a single bounding boxe.
+@param path of the txt file that contains the bounding boxes cordinates.
+@param bb_vector a vector of array, each array containing the cordinates of a single bounding boxe.
 **/
-vector<array<int, 4>> Segmentation::read_bb_file(string path)
+void Segmentation::read_bb_file(string path, vector<array<int, 4>>& bb_vector)
 {
 	String line;
 	vector<String> line_vec;
@@ -58,7 +58,59 @@ vector<array<int, 4>> Segmentation::read_bb_file(string path)
 		}
 		boxes.push_back(cordinates);
 	}
-	return boxes;
+	bb_vector = boxes;
+}
+
+/*
+method that parse the txt file that contains the bounding boxes cordinates and the associated class labels. Then it returns two arrays that store such informations
+The data are expressed in the following order : [ (top-lef corner x cordinate), (top-lef corner y cordinate), (width), (heigth), (class-label) ]
+
+@param path path of the txt file that contains the bounding boxes cordinates.
+@param bb_vector a vector of array, each array containing the cordinates of a single bounding box
+@param class_labels a vector of int, each element containing the label associated with the corrisponding bounding box in bb_vector.
+**/
+void Segmentation::read_bb_file_label(string path, vector<array<int, 4>>& bb_vector, vector<int>& class_labels)
+{
+	String line;
+	vector<String> line_vec;
+	vector<array<int, 4>> boxes;
+	vector<int> labels;
+	ifstream bb_file(path);
+
+	while (getline(bb_file, line)) {
+
+		//cout << line << "\n";
+		line_vec.push_back(line);
+	}
+	for (int i = 0; i < line_vec.size(); i++) {
+		String parsed, iline;
+		iline = line_vec[i];
+		stringstream stringstream(iline);
+		int cordinate_counter = 0;
+		array<int, 4> cordinates;
+		while (getline(stringstream, parsed, '	')) {
+
+			int c = stoi(parsed);
+			//cout << i << " : " << c << "\n";
+			if (cordinate_counter < 4) { cordinates[cordinate_counter] = c; }
+			else if (cordinate_counter == 4) { labels.push_back(c); }
+			else 
+			{
+				cout << "unable to read bounding box file: more that 4 cordinates: " << cordinate_counter;
+				exit(1);
+			}
+			cordinate_counter++;
+		}
+
+		if (cordinate_counter < 5) {
+			cout << "unable to read bounding box file: less that 4 cordinates: " << cordinate_counter;
+			exit(1);
+		}
+		boxes.push_back(cordinates);
+		
+	}
+	bb_vector = boxes;
+	class_labels = labels;
 }
 
 
@@ -80,6 +132,36 @@ void Segmentation::draw_box_image(cv::Mat src, cv::Mat& dst, vector<array<int, 4
 		int w = bound_boxes[k][2];
 		int h = bound_boxes[k][3];
 		rectangle(dst, Point(x, y), Point(x + w, y + h), colors[k] * 0.6, 1, 1);
+	}
+}
+
+/*
+method that draw the specified bounding boxes into the image provided by src and save the result into dst. 
+The color of each drawn boxes depends on the class label associated with the corrisponding bounding boxes.
+
+@param src input image
+@param dst output image
+@param bound_boxes vector of arrays containing the cordinates of the bounding boxes
+@param labels the class labels associated with each bounding box
+@param  show_color_point if set to true allows to visualize the point selected by the method difference_from_center_hand_label to compute the skin color
+**/
+void Segmentation::draw_box_image_label(cv::Mat src, cv::Mat& dst, std::vector<std::array<int, 4>> bound_boxes, std::vector<int> labels, bool show_color_point)
+{
+	dst = src.clone();
+	for (int k = 0; k < bound_boxes.size(); k++) {
+		int x = bound_boxes[k][0];
+		int y = bound_boxes[k][1];
+		int w = bound_boxes[k][2];
+		int h = bound_boxes[k][3];
+		rectangle(dst, Point(x, y), Point(x + w, y + h), colors[labels[k]] * 0.7, 1, 1);
+		if (show_color_point) {
+			int label = labels[k];
+			circle(dst, Point(x + w / 2, y + h / 2), 3, colors[label], 2);
+			if (label  == 0) circle(dst, Point(x + w / 3, y + h * 2 / 3), 3, Scalar(0,0,0), 2);
+			if (label == 1) circle(dst, Point(x + w * 2 / 3, y + h * 2 / 3), 3, Scalar(0, 0, 0), 2);
+			if (label == 2) circle(dst, Point(x + w * 2 / 3, y + h / 3), 3, Scalar(0, 0, 0), 2);
+			if (label == 3) circle(dst, Point(x + w / 3, y + h / 3), 3, Scalar(0, 0, 0), 2);
+		}
 	}
 }
 
@@ -289,7 +371,16 @@ void Segmentation::draw_segmentation_GB_mask(cv::Mat src, cv::Mat& dst, cv::Mat&
 }
 
 
+/*
+method that compute the color difference map bettween the pixels of the src image in the specified bounding boxes and the approssimated value of the skin color.
+The skin color is computed by considering the color value of the central pixel of each bounding box. Then the difference is computed between each pixel inside the bounding box and the corresponding central pixel. 
+The computed value for each pixel of the src image is placed in the same position of dst image. Pixels outside the bounding box are set to black  
 
+@param src input image
+@param dst output image
+@param bound_boxes vector of arrays containing the cordinates of the bounding boxes
+
+**/
 void Segmentation::difference_from_center_hand(cv::Mat src, cv::Mat& dst, std::vector<std::array<int, 4>> bound_boxes)
 {
 	Mat averaged, difference, src_ycc;
@@ -299,10 +390,7 @@ void Segmentation::difference_from_center_hand(cv::Mat src, cv::Mat& dst, std::v
 	cvtColor(src, src_ycc, COLOR_BGR2YCrCb, 0);
 	//cvtColor(averaged, averaged, COLOR_BGR2YCrCb, 0);
 
-	vector <Vec3b> center_value;
-	array <float, 3> channel_sum = { 0.0,0.0,0.0 };
-	Vec3b center_value_mean;
-
+	
 	for (int k = 0; k < bound_boxes.size(); k++) {
 
 		int x = bound_boxes[k][0];
@@ -313,8 +401,7 @@ void Segmentation::difference_from_center_hand(cv::Mat src, cv::Mat& dst, std::v
 		Mat roi(src_ycc(Rect(x, y, w, h)));
 		Mat diff_roi(difference(Rect(x, y, w, h)));
 		Vec3b center_val = roi.at<Vec3b>(h / 2, w / 2);
-		center_value.push_back(roi.at<Vec3b>(h / 2, w / 2));
-
+		
 		for (int i = 0; i < diff_roi.rows; i++) {
 			for (int j = 0; j < diff_roi.cols; j++) {
 
@@ -332,6 +419,60 @@ void Segmentation::difference_from_center_hand(cv::Mat src, cv::Mat& dst, std::v
 	//GaussianBlur(difference, difference, Size(11,11), 0);
 	dst = difference;
 }
+
+/*
+method that compute the color difference map bettween the pixels of the src image in the specified bounding boxes and the approssimated value of the skin color.
+The skin color is computed by considering the average color value between the central pixel of each bounding box and a second pixel in a specific position depending on the label associated with the bounding box. 
+Then the difference is computed between each pixel inside the bounding box and the corresponding central pixel.
+The computed value for each pixel of the src image is placed in the same position of dst image. Pixels outside the bounding box are set to black
+
+@param src input image
+@param dst output image
+@param bound_boxes vector of arrays containing the cordinates of the bounding boxes
+@param class_labels a vector of int, with the same size of bound_boxes, containing the class label associated with each bounding box.
+
+**/
+void Segmentation::difference_from_center_hand_label(cv::Mat src, cv::Mat& dst, std::vector<std::array<int, 4>> bound_boxes, std::vector<int>& class_labels)
+{
+	Mat averaged, difference, src_ycc;
+	difference = Mat::zeros(src.rows, src.cols, CV_8U);
+	//difference = src.clone();
+	//blur(src, averaged, Size(1, 1));
+	cvtColor(src, src_ycc, COLOR_BGR2YCrCb, 0);
+	//cvtColor(averaged, averaged, COLOR_BGR2YCrCb, 0);
+
+	for (int k = 0; k < bound_boxes.size(); k++) {
+
+		int x = bound_boxes[k][0];
+		int y = bound_boxes[k][1];
+		int w = bound_boxes[k][2];
+		int h = bound_boxes[k][3];
+		int label = class_labels[k];
+		Mat roi(src_ycc(Rect(x, y, w, h)));
+		Mat diff_roi(difference(Rect(x, y, w, h)));
+		Vec3b center_val = roi.at<Vec3b>(h / 2, w / 2);
+		Vec3b decenter_val = roi.at<Vec3b>(h / 2, w / 2);
+		
+		if (label == 0) decenter_val = roi.at<Vec3b>(h * 2 / 3, w / 3);
+		if (label == 1) decenter_val = roi.at<Vec3b>(h * 2 / 3, w * 2 / 3);
+		if (label == 2) decenter_val = roi.at<Vec3b>(h / 3, w * 2 / 3);
+		if (label == 3) decenter_val = roi.at<Vec3b>(h / 3, w / 3);
+
+		for (int i = 0; i < diff_roi.rows; i++) {
+			for (int j = 0; j < diff_roi.cols; j++) {
+
+				float cvd[4];
+				cvd[0] = abs(center_val[1] - roi.at<Vec3b>(i, j)[1]);
+				cvd[1] = abs(center_val[2] - roi.at<Vec3b>(i, j)[2]);
+				cvd[2] = abs(decenter_val[1] - roi.at<Vec3b>(i, j)[1]);
+				cvd[3] = abs(decenter_val[2] - roi.at<Vec3b>(i, j)[2]);
+				diff_roi.at<unsigned char>(i, j) = (cvd[0] + cvd[1]+ cvd[2] + cvd[3]) / 4;
+			}
+		}
+	}
+	dst = difference;
+}
+
 
 /*
 method that compute the difference between each pixel of the src image and the approssimated value of the skin color and saves it into the dst image.
