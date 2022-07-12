@@ -15,8 +15,8 @@ public:
 	void draw_box_image(cv::Mat src, cv::Mat& dst, std::vector<std::array<int, 4>> bound_boxes);
 	void apply_mask(cv::Mat src, cv::Mat& dst, cv::Mat mask, bool same_color);
 	
-	void draw_segmentation_Km(cv::Mat src, cv::Mat& dst, std::vector<std::array<int, 4>> bound_boxes);
-	void draw_segmentation_GB(cv::Mat src, cv::Mat& dst, std::vector<std::array<int, 4>> bound_boxes);
+	void draw_segmentation_Km(cv::Mat src, cv::Mat& dst, cv::Mat& bin_mask, std::vector<std::array<int, 4>> bound_boxes);
+	void draw_segmentation_GB(cv::Mat src, cv::Mat& dst, cv::Mat& bin_mask, std::vector<std::array<int, 4>> bound_boxes);
 	void draw_segmentation_GB_mask(cv::Mat src, cv::Mat& dst, cv::Mat& mask, std::vector<std::array<int, 4>> bound_boxes);
 	
 	void difference_from_center_hand(cv::Mat src, cv::Mat& dst, std::vector<std::array<int, 4>> bound_boxes);

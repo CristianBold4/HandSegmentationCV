@@ -10,7 +10,7 @@ int main(int argc, char** argv) {
 	Segmentation seg = Segmentation();
 	string bb_path, rgb_path, mask_path;
 	vector<int> test_indeces = { 1,2,3,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20 };
-	//vector<int> test_indeces = { 2,18,16 };	//use this vector to choose images from test dataset
+	//vector<int> test_indeces = { 1,2,3,18,16 };	//use this vector to choose images from test dataset
 	int test_image_num = 1;
 	for (int k = 0; k < test_indeces.size(); k++) {
 		test_image_num = test_indeces[k];
@@ -54,17 +54,19 @@ int main(int argc, char** argv) {
 
 		seg.treshold_difference(difference, tres_diff, boxes_vec);
 		//seg.show_image(tres_diff, to_string(test_indeces[k]) + ") difference tresholded");
-
-		seg.draw_segmentation_GB_mask(src, gb_th, tres_diff, boxes_vec);
+		
+		seg.draw_segmentation_GB(src, gb_th, tres_diff, boxes_vec);
 		//seg.show_image(gb_th,to_string(test_indeces[k]) +") GB mask");
-
+		seg.show_image(tres_diff, to_string(test_indeces[k]) + ") bin mask");
 
 		seg.apply_mask(src, gb_th, gb_th, false);
 		//seg.show_image(gb_th, to_string(test_indeces[k]) +") GB-mask segmentation");
 
 		cvtColor(gt_mask, gt_mask, COLOR_BGR2GRAY);
 		float pixel_accuracy = seg.compute_pixel_accuracy(tres_diff, gt_mask);
-		cout << "TEST IMG " << to_string(test_image_num) << ": " << "pixel accuracy : " << pixel_accuracy << " \n";
+		String arrow = "";
+		if(pixel_accuracy < 0.975) arrow = "  <--";
+		cout << "TEST IMG " << to_string(test_image_num) << ": " << "pixel accuracy : " << pixel_accuracy << arrow <<" \n";
 
 		seg.draw_box_image(gb_th, gb_th, boxes_vec);
 		seg.show_image(gb_th, to_string(test_indeces[k]) + ") GB-mask segmentation+bb");

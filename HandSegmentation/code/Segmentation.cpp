@@ -116,22 +116,18 @@ The K-means algorithm is performed in a vector space where each vector contains 
 
 @param src input image
 @param dst output image
+@bin_mask output grayscale image that store the final binary mask of the segmentation with classes hand / not hand
 @param bound_boxes vector of arrays containing the cordinates of the bounding boxes
 
 **/
-void Segmentation::draw_segmentation_Km(cv::Mat src, cv::Mat& dst, vector<array<int, 4>> bound_boxes)
+void Segmentation::draw_segmentation_Km(cv::Mat src, cv::Mat& dst, cv::Mat& bin_mask, vector<array<int, 4>> bound_boxes)
 {
 	Mat gaus_blurred, src_ycc, out, labels, bil;
-	dst = src.clone();
+	dst = Mat::zeros(src.rows, src.cols, CV_8UC3);
+	Mat out_mask = Mat::zeros(src.rows, src.cols, CV_8UC1);
 	GaussianBlur(src, gaus_blurred, Size(7, 7), 0);
 	cvtColor(gaus_blurred, src_ycc, COLOR_BGR2YCrCb, 0);
-	/*
-	bilateralFilter(src, bil, -1, 50, 10);
-	namedWindow("bilateral", WINDOW_AUTOSIZE);
-	imshow("bilateral", bil);
-	waitKey(0);
-	*/
-
+	
 	for (int l = 0; l < bound_boxes.size(); l++) {
 
 		int x = bound_boxes[l][0];
@@ -156,17 +152,18 @@ void Segmentation::draw_segmentation_Km(cv::Mat src, cv::Mat& dst, vector<array<
 		kmeans(points, K, labels, TermCriteria(TermCriteria::EPS + TermCriteria::COUNT, 20, 0.5), 10, KMEANS_RANDOM_CENTERS);
 
 		roi = dst(Rect(x, y, w, h));
+		Mat roi_mask = out_mask(Rect(x, y, w, h));
 		for (int i = 0; i < roi.rows; i++) {
 			for (int j = 0; j < roi.cols; j++) {
 				int label = labels.at<int>(i * roi.cols + j);
 				if (label == labels.at<int>((roi.rows / 2 * roi.cols) + (roi.cols / 2))) {
 					roi.at<Vec3b>(i, j) = colors[l];
+					roi_mask.at<unsigned char>(i, j) = 255;
 				}
-
 			}
 		}
 	}
-
+	bin_mask = out_mask;
 
 }
 
@@ -179,13 +176,15 @@ The GrabCut algorithm is performed considering the source image in the YCrCb col
 
 @param src input image
 @param dst output image
+@bin_mask output grayscale image that store the final binary mask of the segmentation with classes hand / not hand
+@param bound_boxes vector of arrays containing the cordinates of the bounding boxes
 @param bound_boxes vector of arrays containing the cordinates of the bounding boxes
 
 **/
-void Segmentation::draw_segmentation_GB(cv::Mat src, cv::Mat& dst, vector<array<int, 4>> bound_boxes)
+void Segmentation::draw_segmentation_GB(cv::Mat src, cv::Mat& dst, cv::Mat& bin_mask, vector<array<int, 4>> bound_boxes)
 {
 	Mat src_ycc, gaus_blurred;
-
+	Mat out_mask = Mat::zeros(bin_mask.rows, bin_mask.cols, CV_8UC1);
 	//GaussianBlur(src, gaus_blurred, Size(7, 7), 0);
 
 	dst = Mat::zeros(src.rows, src.cols, CV_8UC3);
@@ -197,45 +196,22 @@ void Segmentation::draw_segmentation_GB(cv::Mat src, cv::Mat& dst, vector<array<
 		int h = bound_boxes[k][3];
 
 		Mat  bg1, fg1;
-		Mat mask = Mat(src.rows, src.cols, CV_8UC1, GC_BGD);
-		Mat roi(mask(Rect(x, y, w, h)));
-		roi.setTo(Scalar(GC_PR_FGD));
-
-		//i due if servono per flaggare alcune parti della BB come background probabile/certo ma non so se è corretto.
-		/*
-		if (k == 1) {
-			int dimBG = 10;
-			Mat corr(mask(Rect(x + w - dimBG, y, dimBG, dimBG)));
-			corr.setTo(Scalar(GC_BGD));
-			corr= mask(Rect(x , y + h - dimBG, dimBG, dimBG));
-			corr.setTo(Scalar(GC_BGD));
-
-			//namedWindow("cl", WINDOW_AUTOSIZE);
-			//imshow("cl", mask * 50);
-			//waitKey(0);
-		}
-		if (k == 2) {
-
-			int dimBG = 10;
-			Mat corr(mask(Rect(x , y, dimBG, dimBG)));
-			corr.setTo(Scalar(GC_BGD));
-			corr = mask(Rect(x + w - dimBG, y + h - dimBG, dimBG, dimBG));
-			corr.setTo(Scalar(GC_BGD));
-		}*/
+		Mat mask = Mat();
 
 		// nota: leggermente più preciso aumentando iterazioni ma molto più lento
-		grabCut(src_ycc, mask, Rect(x, y, w, h), bg1, fg1, 1, GC_INIT_WITH_MASK);
+		grabCut(src_ycc, mask, Rect(x, y, w, h), bg1, fg1, 1, GC_INIT_WITH_RECT);
 
 		for (int i = 0; i < src.rows; i++) {
 			for (int j = 0; j < src.cols; j++) {
 				if (mask.at<unsigned char>(i, j) == GC_PR_FGD || mask.at<unsigned char>(i, j) == GC_FGD) {
 					dst.at<Vec3b>(i, j) = colors[k];
+					out_mask.at<unsigned char>(i, j) = 255;
 				}
 
 			}
 		}
 	}
-
+	bin_mask = out_mask;
 }
 
 /*
@@ -286,6 +262,7 @@ void Segmentation::draw_segmentation_GB_mask(cv::Mat src, cv::Mat& dst, cv::Mat&
 				if (label_mask.at<unsigned char>(i, j) == GC_PR_FGD || label_mask.at<unsigned char>(i, j) == GC_FGD) {
 					out_mask.at<unsigned char>(i, j) = 255;
 					dst.at<Vec3b>(i, j) = colors[k];
+					//verifica se i pixel appartengono già a un altra mano e li riassegna in base a distanza/dimensione bb (non grandi risultati)
 					/*
 					if (dst.at<Vec3b>(i, j) == black) {
 						dst.at<Vec3b>(i, j) = colors[k];
@@ -299,11 +276,10 @@ void Segmentation::draw_segmentation_GB_mask(cv::Mat src, cv::Mat& dst, cv::Mat&
 						array<int, 2> center_found = { found_bb[0] + found_bb[2] / 2,  found_bb[1] + found_bb[3] / 2 };
 						float distance_k = sqrt((j - center_k[0]) ^ 2 + (i - center_k[1]) ^ 2);
 						float distance_bb = sqrt((j - center_found[0]) ^ 2 + (i - center_found[1]) ^ 2);
-					
+						//controlla dimensione bb o distanza
 						if (h*w > found_bb[2]* found_bb[3]) { dst.at<Vec3b>(i, j) = colors[k]; }
 						else { dst.at<Vec3b>(i, j) = colors[found_index];  }
 					}*/
-					
 					
 				}
 			}
@@ -316,7 +292,6 @@ void Segmentation::draw_segmentation_GB_mask(cv::Mat src, cv::Mat& dst, cv::Mat&
 
 void Segmentation::difference_from_center_hand(cv::Mat src, cv::Mat& dst, std::vector<std::array<int, 4>> bound_boxes)
 {
-
 	Mat averaged, difference, src_ycc;
 	difference = Mat::zeros(src.rows, src.cols, CV_8U);
 	//difference = src.clone();
@@ -349,13 +324,12 @@ void Segmentation::difference_from_center_hand(cv::Mat src, cv::Mat& dst, std::v
 				diff_roi.at<unsigned char>(i, j) = (cvd[0] + cvd[1]) / 2;
 			}
 		}
-		
 	}
 
 	//cvtColor(difference, difference, COLOR_YCrCb2BGR, 0);
 	//cvtColor(difference, difference, COLOR_BGR2GRAY, 0);
 	//intensity_transform::logTransform(difference, difference);
-	GaussianBlur(difference, difference, Size(11,11), 0);
+	//GaussianBlur(difference, difference, Size(11,11), 0);
 	dst = difference;
 }
 
@@ -445,11 +419,7 @@ void Segmentation::treshold_difference(cv::Mat difference, cv::Mat& dst, std::ve
 		int y = bound_boxes[k][1];
 		int w = bound_boxes[k][2];
 		int h = bound_boxes[k][3];
-		/*
-		namedWindow("cl", WINDOW_AUTOSIZE);
-		imshow("cl", averaged);
-		waitKey(0);
-		*/
+
 		Mat roi(difference(Rect(x, y, w, h)));
 		Mat thresholded_roi;
 		double minVal, maxVal;
@@ -489,7 +459,7 @@ float Segmentation::compute_pixel_accuracy(cv::Mat mask, cv::Mat ground_th)
 	return accuracy;
 }
 
-
+/*
 void Segmentation::get_superpixel_image(cv::Mat src, cv::Mat& dst)
 {
 	dst = Mat(src.rows, src.cols, CV_8UC3);
@@ -531,27 +501,9 @@ void Segmentation::get_superpixel_image(cv::Mat src, cv::Mat& dst)
 		}
 	}
 
-}
+}*/
 
 
-
-//codice per calcolo laplacian
-/*
-Mat kernel = (Mat_<float>(3, 3) <<
-	0, 1, 0,
-	1, -4, 1,
-	0, 1, 0);
-Mat imgLaplacian;
-filter2D(src, imgLaplacian, CV_32F, kernel);
-Mat sharp;
-src.convertTo(sharp, CV_32F);
-Mat imgResult = sharp - imgLaplacian;
-// convert back to 8bits gray scale
-imgResult.convertTo(imgResult, CV_8UC3);
-namedWindow("sharp", WINDOW_AUTOSIZE);
-imshow("sharp", imgResult);
-waitKey(0);
-*/
 
 
 
