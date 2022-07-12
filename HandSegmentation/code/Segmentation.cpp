@@ -107,7 +107,7 @@ void Segmentation::apply_mask(cv::Mat src, cv::Mat& dst, cv::Mat mask, bool same
 		}
 	}
 	double alpha = 0.5;
-	addWeighted(src, 1, mask_copy, 0.7, 0.0, dst);
+	addWeighted(src, 1, mask_copy, 0.6, 0.0, dst);
 }
 
 /*
@@ -157,7 +157,7 @@ void Segmentation::draw_segmentation_Km(cv::Mat src, cv::Mat& dst, cv::Mat& bin_
 			for (int j = 0; j < roi.cols; j++) {
 				int label = labels.at<int>(i * roi.cols + j);
 				if (label == labels.at<int>((roi.rows / 2 * roi.cols) + (roi.cols / 2))) {
-					roi.at<Vec3b>(i, j) = colors[l];
+					roi.at<Vec3b>(i, j) = colors[l] * 0.3;
 					roi_mask.at<unsigned char>(i, j) = 255;
 				}
 			}
@@ -204,7 +204,7 @@ void Segmentation::draw_segmentation_GB(cv::Mat src, cv::Mat& dst, cv::Mat& bin_
 		for (int i = 0; i < src.rows; i++) {
 			for (int j = 0; j < src.cols; j++) {
 				if (mask.at<unsigned char>(i, j) == GC_PR_FGD || mask.at<unsigned char>(i, j) == GC_FGD) {
-					dst.at<Vec3b>(i, j) = colors[k];
+					dst.at<Vec3b>(i, j) = colors[k]*0.3;
 					out_mask.at<unsigned char>(i, j) = 255;
 				}
 
@@ -231,7 +231,7 @@ void Segmentation::draw_segmentation_GB_mask(cv::Mat src, cv::Mat& dst, cv::Mat&
 	Mat src_ycc, gaus_blurred;
 	dst = Mat::zeros(src.rows, src.cols, CV_8UC3);
 	cvtColor(src, src_ycc, COLOR_BGR2YCrCb, 0);
-	GaussianBlur(src_ycc, src_ycc, Size(5,5), 0);
+	//GaussianBlur(src_ycc, src_ycc, Size(5,5), 0);
 	Mat out_mask = Mat::zeros(mask.rows, mask.cols, CV_8UC1);
 
 	for (int k = 0; k < bound_boxes.size(); k++) {
@@ -255,13 +255,13 @@ void Segmentation::draw_segmentation_GB_mask(cv::Mat src, cv::Mat& dst, cv::Mat&
 			}
 		}
 		// nota: leggermente più preciso aumentando iterazioni ma molto più lento
-		grabCut(src_ycc, label_mask, Rect(x, y, w, h), bg1, fg1, 2, GC_INIT_WITH_MASK);
+		grabCut(src_ycc, label_mask, Rect(x, y, w, h), bg1, fg1, 1, GC_INIT_WITH_MASK);
 		Vec3b black(0, 0, 0);
 		for (int i = 0; i < dst.rows; i++) {
 			for (int j = 0; j < dst.cols; j++) {
 				if (label_mask.at<unsigned char>(i, j) == GC_PR_FGD || label_mask.at<unsigned char>(i, j) == GC_FGD) {
 					out_mask.at<unsigned char>(i, j) = 255;
-					dst.at<Vec3b>(i, j) = colors[k];
+					dst.at<Vec3b>(i, j) = colors[k] * 0.3;
 					//verifica se i pixel appartengono già a un altra mano e li riassegna in base a distanza/dimensione bb (non grandi risultati)
 					/*
 					if (dst.at<Vec3b>(i, j) == black) {
@@ -443,13 +443,11 @@ method that evaluate a segmentation using the pixel accuracy metric.
 
 @param mask segmentation mask that needs to be evaulated
 @param ground_th ground truth of the segmentation
-@param bound_boxes vector of arrays containing the cordinates of the bounding boxes
 
 **/
 float Segmentation::compute_pixel_accuracy(cv::Mat mask, cv::Mat ground_th)
 {
 	float correctly_classified = 0;
-
 	for (int i = 0; i < mask.rows; i++) {
 		for (int j = 0; j < mask.cols; j++) {
 			if (mask.at<unsigned char>(i, j) == ground_th.at<unsigned char>(i, j)) { correctly_classified++; }
@@ -457,6 +455,39 @@ float Segmentation::compute_pixel_accuracy(cv::Mat mask, cv::Mat ground_th)
 	}
 	float accuracy = correctly_classified / (mask.rows * mask.cols);
 	return accuracy;
+}
+
+/*
+method that evaluate a segmentation using the Intersection Over Union metric.
+
+@param mask segmentation mask that needs to be evaulated
+@param ground_th ground truth of the segmentation
+
+**/
+float Segmentation::compute_IOU(cv::Mat mask, cv::Mat ground_th)
+{
+	float mask_hand = 0;
+	float mask_not_hand = 0;
+	float gt_hand = 0;
+	float gt_not_hand = 0;
+	float intersection_hand = 0;
+	float intersection_not_hand = 0;
+	for (int i = 0; i < mask.rows; i++) {
+		for (int j = 0; j < mask.cols; j++) {
+
+			if (mask.at<unsigned char>(i, j) == 255) { mask_hand++; }
+			if (mask.at<unsigned char>(i, j) == 0) { mask_not_hand++; }
+			if (ground_th.at<unsigned char>(i, j) == 255) { gt_hand++; }
+			if (ground_th.at<unsigned char>(i, j) == 0) { gt_not_hand++; }
+			if (mask.at<unsigned char>(i, j) == 255 && mask.at<unsigned char>(i, j) == ground_th.at<unsigned char>(i, j)) { intersection_hand++; }
+			if (mask.at<unsigned char>(i, j) == 0 && mask.at<unsigned char>(i, j) == ground_th.at<unsigned char>(i, j)) { intersection_not_hand++; }
+		}
+	}
+	float union_hand = (mask_hand + gt_hand) - intersection_hand;
+	float union_not_hand = (mask_not_hand + gt_not_hand) - intersection_not_hand;
+	float IOU = ((intersection_hand / union_hand) + (intersection_not_hand / union_not_hand)) / 2;
+	
+	return IOU;
 }
 
 /*
