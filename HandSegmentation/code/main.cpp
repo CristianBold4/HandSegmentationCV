@@ -11,15 +11,23 @@ int main(int argc, char** argv) {
 	Segmentation seg = Segmentation();
 	string bb_path, rgb_path, mask_path;
 	vector<int> test_indeces = {   1,2,3,4,5,6,7,8,9,10, 11,12,13,14,15,16,17,18,19,20 };
-	//vector<int> test_indeces = { 5 };	//use this vector to choose images from test dataset
+	//vector<int> test_indeces = { 17 };	//use this vector to choose images from test dataset
 	int test_image_num = 1;
-	int test_num = 1;
-	string method = "GrabCut-mask";
+	int test_num = 2;
+	string method = "GrabCut-mask, wide bb";
 	string out_name = "segmentation_results_v" + to_string(test_num) + ".txt";
 	ofstream out_file(out_name);
 	out_file << "SEGMENTATION RESULTS\nMethod used: " << method << ";\ntest num. " << test_num<< "\n\n";
 	float pixel_accuracy_sum = 0;
 	float IOU_sum = 0;
+
+	/*
+	array<int, 4 > array1 = {0,0,1280,720 };
+	array<int, 4 > array2 = { -600,250,30,90 };
+	std::vector<std::array<int, 4>> test_vec = { array1 ,array2 };
+	std::cout << seg.valid_bb_cordinates(720, 1280, test_vec);
+		*/
+
 	for (int k = 0; k < test_indeces.size(); k++) {
 		test_image_num = test_indeces[k];
 		//remember to change the det folder to det_label if using labels
@@ -45,14 +53,14 @@ int main(int argc, char** argv) {
 		vector<array<int, 4>> boxes_vec;
 		vector<int> class_labels;
 	
-		//seg.read_bb_file(bb_path, boxes_vec);
-		seg.read_bb_file_label(bb_path, boxes_vec, class_labels);
-		//for (int i = 0; i < class_labels.size(); i++) cout << class_labels[i] << "\n";
+		//seg.read_bb_file(src.rows, src.cols,bb_path, boxes_vec);
+		seg.read_bb_file_label(src.rows, src.cols, bb_path, boxes_vec, class_labels);
+		boxes_vec = seg.get_wide_cordinates(src.rows, src.cols, boxes_vec);
 
 		Mat src_bb;
 		seg.draw_box_image_label(src, src_bb, boxes_vec, class_labels, true);
 		//seg.draw_box_image(src, src_bb, boxes_vec);
-		seg.show_image(src_bb, to_string(test_image_num) + ")src_bb");
+		//seg.show_image(src_bb, to_string(test_image_num) + ")src_bb");
 
 		//NORMAL
 		//Mat gt_segmentation;
@@ -78,7 +86,7 @@ int main(int argc, char** argv) {
 		//seg.show_image(tres_diff, to_string(test_indeces[k]) + ") bin mask");
 
 		seg.apply_mask(src, gb_th, gb_th, false);
-		seg.show_image(gb_th, to_string(test_indeces[k]) +") GB-mask segmentation");
+		//seg.show_image(gb_th, to_string(test_indeces[k]) +") GB-mask segmentation");
 
 		cvtColor(gt_mask, gt_mask, COLOR_BGR2GRAY);
 		
@@ -103,6 +111,8 @@ int main(int argc, char** argv) {
 	out_file << "\naverage IOU: " << IOU_sum / test_indeces.size() << " \n";
 
 	out_file.close();
+
+
 	return 0;
 }
 

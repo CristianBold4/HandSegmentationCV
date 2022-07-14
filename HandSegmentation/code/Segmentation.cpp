@@ -8,6 +8,20 @@ using namespace cv;
 using namespace std;
 
 
+bool Segmentation::valid_bb_cordinates(int src_r, int src_c, std::vector<std::array<int, 4>> bb_vector)
+{
+	for (int k = 0; k < bb_vector.size(); k++) {
+		int x = bb_vector[k][0];
+		int y = bb_vector[k][1];
+		int w = bb_vector[k][2];
+		int h = bb_vector[k][3];
+
+		if (x < 0 || y < 0 || w < 0 || h < 0) return false;
+		if (x > src_c || y>src_r || (x + w)>src_c || (y + h) > src_r) return false;
+	}
+	return true;
+}
+
 void Segmentation::show_image(Mat to_show, string window_name)
 {
 	namedWindow(window_name, WINDOW_AUTOSIZE);
@@ -22,7 +36,7 @@ The cordinates are expressed as : [ (top-lef corner x cordinate), (top-lef corne
 @param path of the txt file that contains the bounding boxes cordinates.
 @param bb_vector a vector of array, each array containing the cordinates of a single bounding boxe.
 **/
-void Segmentation::read_bb_file(string path, vector<array<int, 4>>& bb_vector)
+void Segmentation::read_bb_file(int src_r, int src_c, string path, vector<array<int, 4>>& bb_vector)
 {
 	String line;
 	vector<String> line_vec;
@@ -58,6 +72,10 @@ void Segmentation::read_bb_file(string path, vector<array<int, 4>>& bb_vector)
 		}
 		boxes.push_back(cordinates);
 	}
+	if (!valid_bb_cordinates(src_r, src_c, boxes)) {
+		cout << "the cordinates provided are not consistent with src size";
+		exit(1);
+	}
 	bb_vector = boxes;
 }
 
@@ -69,7 +87,7 @@ The data are expressed in the following order : [ (top-lef corner x cordinate), 
 @param bb_vector a vector of array, each array containing the cordinates of a single bounding box
 @param class_labels a vector of int, each element containing the label associated with the corrisponding bounding box in bb_vector.
 **/
-void Segmentation::read_bb_file_label(string path, vector<array<int, 4>>& bb_vector, vector<int>& class_labels)
+void Segmentation::read_bb_file_label(int src_r, int src_c, string path, vector<array<int, 4>>& bb_vector, vector<int>& class_labels)
 {
 	String line;
 	vector<String> line_vec;
@@ -109,8 +127,36 @@ void Segmentation::read_bb_file_label(string path, vector<array<int, 4>>& bb_vec
 		boxes.push_back(cordinates);
 		
 	}
+	if (!valid_bb_cordinates(src_r, src_c, boxes)) {
+		cout << "the cordinates provided are not consistent with src size";
+		exit(1);
+	}
 	bb_vector = boxes;
 	class_labels = labels;
+}
+
+std::vector<std::array<int, 4>> Segmentation::get_wide_cordinates(int src_r, int src_c, std::vector<std::array<int, 4>>& bb_vector)
+{
+	int delta = 5;
+	vector<array<int, 4>> wide_bb_vector;
+
+	for (int k = 0; k < bb_vector.size(); k++) {
+		int x = bb_vector[k][0];
+		int y = bb_vector[k][1];
+		int w = bb_vector[k][2];
+		int h = bb_vector[k][3];
+
+		array<int, 4> wide_bb = { x - delta, y - delta, w + delta, h + delta };
+		vector<std::array<int, 4>> check_vec = { wide_bb };
+		if (valid_bb_cordinates(src_r, src_c, check_vec)) {	wide_bb_vector.push_back(wide_bb); }
+		else { wide_bb_vector.push_back(bb_vector[k]); }
+
+
+	}
+
+	
+	return wide_bb_vector;
+	
 }
 
 
