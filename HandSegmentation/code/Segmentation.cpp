@@ -238,19 +238,27 @@ void Segmentation::apply_mask(cv::Mat src, cv::Mat& dst, cv::Mat mask, bool same
 	addWeighted(src, 1, mask_copy, 0.8, 0.0, dst);
 }
 
-/*
-method that draw into dst the result of the segmentation perfomed on src, using K-means clustering.
-The K-means algorithm is performed in a vector space where each vector contains the Cb and Cr channel value of each pixel (+ altro da decidere).
+/* @brief Method that performs the segmentation of the provided image, using K-means clustering.
 
-@param src input image
-@param dst output image
-@bin_mask output grayscale image that store the final binary mask of the segmentation with classes hand / not hand
-@param bound_boxes vector of arrays containing the cordinates of the bounding boxes
+The K-means algorithm is performed in a vector space where each vector is associated to a single pixel and it contains: 
+- the Cb channel value of the pixel 
+- the Cr channel value of the pixel
+- the euclidean distance between the pixel and the centre of the bounding box it belongs to
+The results of the segmentation are stored into a colored mask (a specific color for each hand) and a binary mask (white for hand, black for not hand).
+
+
+@param src input image where to perform segmentation
+@param dst output colored image with black background that contains the mask computed for each hand (with different colors).
+@param bin_mask output grayscale image that store the final binary mask of the segmentation with classes hand / not hand.
+@param bound_boxes vector of arrays containing the cordinates of the bounding boxes.
+@param class_labels vector that stores the class label associated with each boundig box, used for color choice. 
+If empty, the colors are chosen according to bounding boxes order into bound_boxes.
+
 
 **/
-void Segmentation::draw_segmentation_Km(cv::Mat src, cv::Mat& dst, cv::Mat& bin_mask, vector<array<int, 4>> bound_boxes)
+void Segmentation::draw_segmentation_Km(cv::Mat src, cv::Mat& dst, cv::Mat& bin_mask, vector<array<int, 4>> bound_boxes, std::vector<int> class_labels)
 {
-	Mat gaus_blurred, src_ycc, out, labels, bil;
+	Mat gaus_blurred, src_ycc, labels;
 	dst = Mat::zeros(src.rows, src.cols, CV_8UC3);
 	Mat out_mask = Mat::zeros(src.rows, src.cols, CV_8UC1);
 	GaussianBlur(src, gaus_blurred, Size(7, 7), 0);
@@ -262,61 +270,65 @@ void Segmentation::draw_segmentation_Km(cv::Mat src, cv::Mat& dst, cv::Mat& bin_
 		int y = bound_boxes[l][1];
 		int w = bound_boxes[l][2];
 		int h = bound_boxes[l][3];
-
+		
+		//create a Mat object that contains the datapoints used by K-means
 		Mat roi(src_ycc(Rect(x, y, w, h)));
-		Mat points = Mat::zeros(roi.cols * roi.rows, 3, CV_32F);
 		float center_x = float(roi.rows) / 2;
 		float center_y = float(roi.cols) / 2;
+		Mat points = Mat::zeros(roi.cols * roi.rows, 3, CV_32F);
 		for (int i = 0; i < roi.rows; i++) {
 			for (int j = 0; j < roi.cols; j++) {
-				//the next line takes into account the euclidean distance between a pixel and the centre (divided to adjust weight)
-				points.at<float>((i * roi.cols + j), 0) = sqrt((center_x - i) * (center_x - i) + (center_y - j) * (center_y - j)) / 3;
+				//each datapoint takes into account the euclidean distance between a pixel and the centre (divided to adjust weight)
+				points.at<float>((i * roi.cols + j), 0) = sqrt((center_x - i) * (center_x - i) + (center_y - j) * (center_y - j)) / 5;
 				points.at<float>((i * roi.cols + j), 1) = roi.at<Vec3b>(i, j)[1];
 				points.at<float>((i * roi.cols + j), 2) = roi.at<Vec3b>(i, j)[2];
 			}
 		}
 
+		//run the K-means algorithm
 		int K = 2;
 		kmeans(points, K, labels, TermCriteria(TermCriteria::EPS + TermCriteria::COUNT, 20, 0.5), 10, KMEANS_RANDOM_CENTERS);
-
+		
+		//use the labels computed by K-means to draw the output masks
 		roi = dst(Rect(x, y, w, h));
 		Mat roi_mask = out_mask(Rect(x, y, w, h));
 		for (int i = 0; i < roi.rows; i++) {
 			for (int j = 0; j < roi.cols; j++) {
 				int label = labels.at<int>(i * roi.cols + j);
 				if (label == labels.at<int>((roi.rows / 2 * roi.cols) + (roi.cols / 2))) {
-					roi.at<Vec3b>(i, j) = colors[l] * 0.3;
+					if (!class_labels.empty()) roi.at<Vec3b>(i, j) = colors[class_labels[l]] * 0.3;
+					else roi.at<Vec3b>(i, j) = colors[l] * 0.3;
 					roi_mask.at<unsigned char>(i, j) = 255;
 				}
 			}
 		}
 	}
 	bin_mask = out_mask;
-
 }
 
 
 
 
-/*
-method that draw into dst the result of the segmentation perfomed on src, using GrabCut algorithm.
-The GrabCut algorithm is performed considering the source image in the YCrCb color space.
+/* @brief Method that performs the segmentation of the provided image, using GrabCut algorithm.
 
-@param src input image
-@param dst output image
-@bin_mask output grayscale image that store the final binary mask of the segmentation with classes hand / not hand
-@param bound_boxes vector of arrays containing the cordinates of the bounding boxes
-@param bound_boxes vector of arrays containing the cordinates of the bounding boxes
+The GrabCut algorithm is performed on the source image in the YCrCb color space, considering a single bounding box at a time.
+All the pixel outside the bounding box are considered certain background. 
 
+@param src input image where to perform segmentation
+@param dst output colored image with black background that contains the mask computed for each hand (with different colors).
+@param bin_mask output grayscale image that store the final binary mask of the segmentation with classes hand / not hand.
+@param bound_boxes vector of arrays containing the cordinates of the bounding boxes.
+@param class_labels vector that stores the class label associated with each boundig box, used for color choice.
+If empty, the colors are chosen according to bounding boxes order into bound_boxes.
 **/
-void Segmentation::draw_segmentation_GB(cv::Mat src, cv::Mat& dst, cv::Mat& bin_mask, vector<array<int, 4>> bound_boxes)
+void Segmentation::draw_segmentation_GB(cv::Mat src, cv::Mat& dst, cv::Mat& bin_mask, vector<array<int, 4>> bound_boxes, std::vector<int> class_labels)
 {
-	Mat src_ycc, gaus_blurred;
-	Mat out_mask = Mat::zeros(bin_mask.rows, bin_mask.cols, CV_8UC1);
-	//GaussianBlur(src, gaus_blurred, Size(7, 7), 0);
-
-	dst = Mat::zeros(src.rows, src.cols, CV_8UC3);
+	Mat src_ycc;
 	cvtColor(src, src_ycc, COLOR_BGR2YCrCb, 0);
+	Mat out_mask = Mat::zeros(bin_mask.rows, bin_mask.cols, CV_8UC1);
+	dst = Mat::zeros(src.rows, src.cols, CV_8UC3);
+	
+	//each iteration work on a single bounding box
 	for (int k = 0; k < bound_boxes.size(); k++) {
 		int x = bound_boxes[k][0];
 		int y = bound_boxes[k][1];
@@ -326,40 +338,44 @@ void Segmentation::draw_segmentation_GB(cv::Mat src, cv::Mat& dst, cv::Mat& bin_
 		Mat  bg1, fg1;
 		Mat mask = Mat();
 
-		// nota: leggermente più preciso aumentando iterazioni ma molto più lento
+		// run GrabCut algorithm on the source image considering the k-th bounding box; pixels outside the bounding box are considered background
 		grabCut(src_ycc, mask, Rect(x, y, w, h), bg1, fg1, 1, GC_INIT_WITH_RECT);
 
+		//use the labels computed by GrabCut to draw the output masks of the k-th hand.
 		for (int i = 0; i < src.rows; i++) {
 			for (int j = 0; j < src.cols; j++) {
 				if (mask.at<unsigned char>(i, j) == GC_PR_FGD || mask.at<unsigned char>(i, j) == GC_FGD) {
-					dst.at<Vec3b>(i, j) = colors[k]*0.3;
+					if (!class_labels.empty()) dst.at<Vec3b>(i, j) = colors[class_labels[k]] * 0.3;
+					else dst.at<Vec3b>(i, j) = colors[k] * 0.3;
 					out_mask.at<unsigned char>(i, j) = 255;
 				}
-
 			}
 		}
 	}
 	bin_mask = out_mask;
 }
 
-/*
-method that draw into dst the result of the segmentation perfomed on src, using GrabCut algorithm starting from a given initial mask.
-The pixel of the mask with value 255 are considered to be probable foreground pixels; other pixels are considered probable background.
-The GrabCut algorithm is performed considering the source image in the YCrCb color space.
+/* @brief Method that performs the segmentation of the provided image, using GrabCut with a given initial mask.
 
-@param src input image
-@param dst output image
-@mask a grayscale image to be used as initial mask for the Grabcut algorithm. After the segmentation it also store the final binary mask of the segmentation with classes hand / not hand
-@param bound_boxes vector of arrays containing the cordinates of the bounding boxes
+The GrabCut algorithm is performed on the source image in the YCrCb color space, considering a single bounding box at a time.
+The algorithm starts from a given initial bynary mask of each bounding box: white pixels are considered as probable foreground (hand), black pixels as probable background (not hand). 
 
+
+@param src input image where to perform segmentation
+@param dst output colored image with black background that contains the mask computed for each hand (with different colors).
+@param mask after the call it stores the final binary mask of the segmentation with classes hand / not hand.
+@param mask_vec vector of bynary images used by GrabCut as initial mask for each hand segmentation.
+@param bound_boxes vector of arrays containing the cordinates of the bounding boxes.
+@param class_labels vector that stores the class label associated with each boundig box, used for color choice.
+If empty, the colors are chosen according to bounding boxes order into bound_boxes.
 **/
-void Segmentation::draw_segmentation_GB_mask(cv::Mat src, cv::Mat& dst, cv::Mat& mask, std::vector<std::array<int, 4>> bound_boxes, vector<int> class_labels)
+void Segmentation::draw_segmentation_GB_mask(cv::Mat src, cv::Mat& dst, cv::Mat& mask, std::vector<cv::Mat>& mask_vec, std::vector<std::array<int, 4>> bound_boxes, std::vector<int> class_labels)
 {
 	Mat src_ycc, gaus_blurred;
 	dst = Mat::zeros(src.rows, src.cols, CV_8UC3);
 	cvtColor(src, src_ycc, COLOR_BGR2YCrCb, 0);
-	//GaussianBlur(src_ycc, src_ycc, Size(5,5), 0);
-	Mat out_mask = Mat::zeros(mask.rows, mask.cols, CV_8UC1);
+	
+	Mat out_mask = Mat::zeros(src.rows, src.cols, CV_8UC1);
 
 	for (int k = 0; k < bound_boxes.size(); k++) {
 
@@ -369,8 +385,8 @@ void Segmentation::draw_segmentation_GB_mask(cv::Mat src, cv::Mat& dst, cv::Mat&
 		int h = bound_boxes[k][3];
 
 		Mat  bg1, fg1;
-		Mat label_mask = Mat(mask.rows, mask.cols, CV_8UC1, GC_BGD);
-		Mat mask_roi(mask(Rect(x, y, w, h)));
+		Mat label_mask = Mat(src.rows, src.cols, CV_8UC1, GC_BGD);
+		Mat mask_roi = mask_vec[k].clone();
 		Mat label_roi(label_mask(Rect(x, y, w, h)));
 
 		for (int i = 0; i < mask_roi.rows; i++) {
@@ -391,25 +407,6 @@ void Segmentation::draw_segmentation_GB_mask(cv::Mat src, cv::Mat& dst, cv::Mat&
 					out_mask.at<unsigned char>(i, j) = 255;
 					if(!class_labels.empty()) dst.at<Vec3b>(i, j) = colors[class_labels[k]] * 0.3;
 					else dst.at<Vec3b>(i, j) = colors[k] * 0.3;
-
-					//verifica se i pixel appartengono già a un altra mano e li riassegna in base a distanza/dimensione bb (non grandi risultati)
-					/*
-					if (dst.at<Vec3b>(i, j) == black) {
-						dst.at<Vec3b>(i, j) = colors[k];
-					}
-					else {
-						Vec3b found_color = dst.at<Vec3b>(i, j);
-						array<cv::Vec3b, 4>::iterator it = find(colors.begin(), colors.end(), found_color);
-						int found_index = it - colors.begin();
-						array<int, 4> found_bb = bound_boxes[found_index];
-						array<int, 2> center_k = { x + w / 2, y + h / 2 };
-						array<int, 2> center_found = { found_bb[0] + found_bb[2] / 2,  found_bb[1] + found_bb[3] / 2 };
-						float distance_k = sqrt((j - center_k[0]) ^ 2 + (i - center_k[1]) ^ 2);
-						float distance_bb = sqrt((j - center_found[0]) ^ 2 + (i - center_found[1]) ^ 2);
-						//controlla dimensione bb o distanza
-						if (h*w > found_bb[2]* found_bb[3]) { dst.at<Vec3b>(i, j) = colors[k]; }
-						else { dst.at<Vec3b>(i, j) = colors[found_index];  }
-					}*/
 					
 				}
 			}
@@ -431,6 +428,8 @@ void Segmentation::draw_segmentation_GB_mask(cv::Mat src, cv::Mat& dst, cv::Mat&
 		}
 	}
 	mask = out_mask;
+
+
 }
 
 
@@ -483,6 +482,8 @@ void Segmentation::difference_from_center_hand(cv::Mat src, cv::Mat& dst, std::v
 	dst = difference;
 }
 
+
+
 /*
 method that compute the color difference map bettween the pixels of the src image in the specified bounding boxes and the approssimated value of the skin color.
 The skin color is computed by considering the average color value between the central pixel of each bounding box and a second pixel in a specific position depending on the label associated with the bounding box. 
@@ -491,19 +492,17 @@ The computed value for each pixel of the src image is placed in the same positio
 
 @param src input image
 @param dst output image
+@param difference_bb_vec vector that, after the call, stores the difference images computed for each bounding box
 @param bound_boxes vector of arrays containing the cordinates of the bounding boxes
 @param class_labels a vector of int, with the same size of bound_boxes, containing the class label associated with each bounding box.
 
 **/
-void Segmentation::difference_from_center_hand_label(cv::Mat src, cv::Mat& dst, std::vector<std::array<int, 4>> bound_boxes, std::vector<int>& class_labels)
+void Segmentation::difference_from_center_hand_label(cv::Mat src, std::vector<Mat>& difference_bb_vec, std::vector<std::array<int, 4>> bound_boxes, std::vector<int>& class_labels)
 {
 	Mat averaged, difference, src_ycc;
-	difference = Mat::zeros(src.rows, src.cols, CV_8U);
-	//difference = src.clone();
-	//blur(src, averaged, Size(1, 1));
-	cvtColor(src, src_ycc, COLOR_BGR2YCrCb, 0);
-	//cvtColor(averaged, averaged, COLOR_BGR2YCrCb, 0);
 
+	cvtColor(src, src_ycc, COLOR_BGR2YCrCb, 0);
+	
 	for (int k = 0; k < bound_boxes.size(); k++) {
 
 		int x = bound_boxes[k][0];
@@ -512,29 +511,36 @@ void Segmentation::difference_from_center_hand_label(cv::Mat src, cv::Mat& dst, 
 		int h = bound_boxes[k][3];
 		int label = class_labels[k];
 		Mat roi(src_ycc(Rect(x, y, w, h)));
-		Mat diff_roi(difference(Rect(x, y, w, h)));
+		//Mat diff_roi(difference(Rect(x, y, w, h)));
 		Vec3b center_val = roi.at<Vec3b>(h / 2, w / 2);
 		Vec3b decenter_val = roi.at<Vec3b>(h / 2, w / 2);
-		
+
 		if (label == 0) decenter_val = roi.at<Vec3b>(h * 2 / 3, w / 3);
 		if (label == 1) decenter_val = roi.at<Vec3b>(h * 2 / 3, w * 2 / 3);
 		if (label == 2) decenter_val = roi.at<Vec3b>(h / 3, w * 2 / 3);
 		if (label == 3) decenter_val = roi.at<Vec3b>(h / 3, w / 3);
 
-		for (int i = 0; i < diff_roi.rows; i++) {
-			for (int j = 0; j < diff_roi.cols; j++) {
+		Mat difference_bb(h, w, CV_8U);
+		for (int i = 0; i < roi.rows; i++) {
+			for (int j = 0; j < roi.cols; j++) {
 
 				float cvd[4];
 				cvd[0] = abs(center_val[1] - roi.at<Vec3b>(i, j)[1]);
 				cvd[1] = abs(center_val[2] - roi.at<Vec3b>(i, j)[2]);
 				cvd[2] = abs(decenter_val[1] - roi.at<Vec3b>(i, j)[1]);
 				cvd[3] = abs(decenter_val[2] - roi.at<Vec3b>(i, j)[2]);
-				diff_roi.at<unsigned char>(i, j) = (cvd[0] + cvd[1]+ cvd[2] + cvd[3]) / 4;
+				difference_bb.at<unsigned char>(i, j) = (cvd[0] + cvd[1] + cvd[2] + cvd[3]) / 4;
 			}
 		}
+		difference_bb_vec.push_back(difference_bb);
+		//show_image(difference_bb, to_string(k));
 	}
-	dst = difference;
+
 }
+
+
+
+
 
 
 /*
@@ -606,17 +612,16 @@ void Segmentation::difference_from_center(cv::Mat src, cv::Mat& dst, vector<arra
 method that perform a treshold of a given image considering only the specified boxes. 
 The treshold is performed separately inside each boxes, exploiting the OTSU method.
 
-
 @param difference input image
 @param dst output image
+@param difference_bb_vec vector that stores the difference images to be thresholded for each bounding box
+@param treshold_bb_vec vector that, after the call, stores the images obtained after the treshold of each bounding box difference image
 @param bound_boxes vector of arrays containing the cordinates of the bounding boxes
 
 **/
-void Segmentation::treshold_difference(cv::Mat difference, cv::Mat& dst, std::vector<std::array<int, 4>> bound_boxes)
+void Segmentation::treshold_difference(std::vector<cv::Mat>& difference_bb_vec, std::vector<cv::Mat>& treshold_bb_vec, std::vector<std::array<int, 4>> bound_boxes)
 {
-	int hand_labels[4] = { 255,200,150,100 };
-	dst = difference.clone();
-	vector<Mat> thresholded_boxes;
+
 	for (int k = 0; k < bound_boxes.size(); k++) {
 
 		int x = bound_boxes[k][0];
@@ -624,23 +629,28 @@ void Segmentation::treshold_difference(cv::Mat difference, cv::Mat& dst, std::ve
 		int w = bound_boxes[k][2];
 		int h = bound_boxes[k][3];
 
-		Mat roi(difference(Rect(x, y, w, h)));
-		Mat thresholded_roi;
-		double minVal, maxVal;
-		minMaxIdx(roi, &minVal, &maxVal);
 		
+		Mat roi = difference_bb_vec[k].clone();
+
+		Mat thresholded_roi;
+	//	double minVal, maxVal;
+
+		//minMaxIdx(roi, &minVal, &maxVal);
+
 		//two alternatives
 		//threshold(roi, thresholded_roi, minVal*1.4, 255, THRESH_BINARY_INV);
 		threshold(roi, thresholded_roi, 1, 255, THRESH_BINARY_INV + THRESH_OTSU);
-	
-		thresholded_boxes.push_back(thresholded_roi);
+
+		treshold_bb_vec.push_back(thresholded_roi);
 	}
 
 	for (int k = 0; k < bound_boxes.size(); k++) {
 		//dst(Rect(bound_boxes[k][0], bound_boxes[k][1], bound_boxes[k][2], bound_boxes[k][3])) = thresholded_boxes[k];
-		thresholded_boxes[k].copyTo(dst(Rect(bound_boxes[k][0], bound_boxes[k][1], bound_boxes[k][2], bound_boxes[k][3])));
+		//thresholded_boxes[k].copyTo(dst(Rect(bound_boxes[k][0], bound_boxes[k][1], bound_boxes[k][2], bound_boxes[k][3])));
+		//show_image(treshold_bb_vec[k], to_string(k));
 	}
 }
+
 
 /*
 method that evaluate a segmentation using the pixel accuracy metric. 

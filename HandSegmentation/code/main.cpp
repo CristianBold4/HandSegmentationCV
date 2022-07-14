@@ -12,24 +12,18 @@ int main(int argc, char** argv) {
 	string bb_path, rgb_path, mask_path;
 	vector<int> test_indeces = {   1,2,3,4,5,6,7,8,9,10, 11,12,13,14,15,16,17,18,19,20 };
 	//vector<int> test_indeces = { 17 };	//use this vector to choose images from test dataset
-	int test_image_num = 1;
+	
 	int test_num = 2;
-	string method = "GrabCut-mask, wide bb";
+	string method = "K-means";
 	string out_name = "segmentation_results_v" + to_string(test_num) + ".txt";
 	ofstream out_file(out_name);
 	out_file << "SEGMENTATION RESULTS\nMethod used: " << method << ";\ntest num. " << test_num<< "\n\n";
 	float pixel_accuracy_sum = 0;
 	float IOU_sum = 0;
 
-	/*
-	array<int, 4 > array1 = {0,0,1280,720 };
-	array<int, 4 > array2 = { -600,250,30,90 };
-	std::vector<std::array<int, 4>> test_vec = { array1 ,array2 };
-	std::cout << seg.valid_bb_cordinates(720, 1280, test_vec);
-		*/
 
 	for (int k = 0; k < test_indeces.size(); k++) {
-		test_image_num = test_indeces[k];
+		int test_image_num = test_indeces[k];
 		//remember to change the det folder to det_label if using labels
 		if (test_image_num < 10) {
 			bb_path = "../../../det_label/0" + to_string(test_image_num) + ".txt";
@@ -53,16 +47,16 @@ int main(int argc, char** argv) {
 		vector<array<int, 4>> boxes_vec;
 		vector<int> class_labels;
 	
-		//seg.read_bb_file(src.rows, src.cols,bb_path, boxes_vec);
+		
 		seg.read_bb_file_label(src.rows, src.cols, bb_path, boxes_vec, class_labels);
-		boxes_vec = seg.get_wide_cordinates(src.rows, src.cols, boxes_vec);
+		//boxes_vec = seg.get_wide_cordinates(src.rows, src.cols, boxes_vec);
 
 		Mat src_bb;
 		seg.draw_box_image_label(src, src_bb, boxes_vec, class_labels, true);
 		//seg.draw_box_image(src, src_bb, boxes_vec);
 		//seg.show_image(src_bb, to_string(test_image_num) + ")src_bb");
 
-		//NORMAL
+		
 		//Mat gt_segmentation;
 		//seg.apply_mask(src, gt_segmentation, gt_mask, true);
 		//seg.draw_box_image(gt_segmentation, gt_segmentation, boxes_vec);
@@ -74,16 +68,19 @@ int main(int argc, char** argv) {
 
 		//compute difference image
 		Mat difference, tres_diff, gb_th;
-		seg.difference_from_center_hand_label(src, difference, boxes_vec, class_labels);
-		//seg.difference_from_center_hand(src, difference, boxes_vec);
+		vector<Mat> difference_bb_vec;
+		seg.difference_from_center_hand_label(src, difference_bb_vec, boxes_vec, class_labels);
 		//seg.show_image(difference*5, to_string(test_indeces[k]) + ") difference from skin"); //difference multiplied for visualization
 
-		seg.treshold_difference(difference, tres_diff, boxes_vec);
+		vector<Mat> treshold_bb_vec;
+		seg.treshold_difference(difference_bb_vec, treshold_bb_vec, boxes_vec);
 		//seg.show_image(tres_diff, to_string(test_indeces[k]) + ") difference tresholded");
 		
-		seg.draw_segmentation_GB_mask(src, gb_th, tres_diff, boxes_vec, class_labels);
+		seg.draw_segmentation_GB_mask(src, gb_th, tres_diff, treshold_bb_vec, boxes_vec, class_labels);
 		//seg.show_image(gb_th,to_string(test_indeces[k]) +") GB mask");
 		//seg.show_image(tres_diff, to_string(test_indeces[k]) + ") bin mask");
+
+		//seg.draw_segmentation_Km(src, gb_th, tres_diff, boxes_vec, class_labels);
 
 		seg.apply_mask(src, gb_th, gb_th, false);
 		//seg.show_image(gb_th, to_string(test_indeces[k]) +") GB-mask segmentation");
@@ -99,8 +96,8 @@ int main(int argc, char** argv) {
 		cout << "Img " << to_string(test_image_num) << ")	" << "PA: " << pixel_accuracy << arrow << ";	IOU: " << IOU <<  " \n";
 		out_file << "Img " << to_string(test_image_num) << ")	" << "PA: " << pixel_accuracy << arrow << ";	IOU: " << IOU << " \n";
 
-		//seg.draw_box_image_label(gb_th, gb_th, boxes_vec,class_labels,false);
-		//seg.show_image(gb_th, to_string(test_indeces[k]) + ") GB-mask segmentation+bb");
+		seg.draw_box_image_label(gb_th, gb_th, boxes_vec,class_labels,false);
+		seg.show_image(gb_th, to_string(test_indeces[k]) + ") GB-mask segmentation+bb");
 			
 	}
 	
