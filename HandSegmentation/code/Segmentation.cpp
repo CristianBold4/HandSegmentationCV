@@ -189,7 +189,7 @@ void Segmentation::apply_mask(cv::Mat src, cv::Mat& dst, cv::Mat mask, bool same
 		}
 	}
 	double alpha = 0.5;
-	addWeighted(src, 1, mask_copy, 0.6, 0.0, dst);
+	addWeighted(src, 1, mask_copy, 0.8, 0.0, dst);
 }
 
 /*
@@ -307,9 +307,8 @@ The GrabCut algorithm is performed considering the source image in the YCrCb col
 @param bound_boxes vector of arrays containing the cordinates of the bounding boxes
 
 **/
-void Segmentation::draw_segmentation_GB_mask(cv::Mat src, cv::Mat& dst, cv::Mat& mask, std::vector<std::array<int, 4>> bound_boxes)
+void Segmentation::draw_segmentation_GB_mask(cv::Mat src, cv::Mat& dst, cv::Mat& mask, std::vector<std::array<int, 4>> bound_boxes, vector<int> class_labels)
 {
-	
 	Mat src_ycc, gaus_blurred;
 	dst = Mat::zeros(src.rows, src.cols, CV_8UC3);
 	cvtColor(src, src_ycc, COLOR_BGR2YCrCb, 0);
@@ -325,12 +324,12 @@ void Segmentation::draw_segmentation_GB_mask(cv::Mat src, cv::Mat& dst, cv::Mat&
 
 		Mat  bg1, fg1;
 		Mat label_mask = Mat(mask.rows, mask.cols, CV_8UC1, GC_BGD);
-		Mat roi(mask(Rect(x, y, w, h)));
+		Mat mask_roi(mask(Rect(x, y, w, h)));
 		Mat label_roi(label_mask(Rect(x, y, w, h)));
 
-		for (int i = 0; i < roi.rows; i++) {
-			for (int j = 0; j < roi.cols; j++) {
-				if (roi.at<unsigned char>(i, j) == 255) {
+		for (int i = 0; i < mask_roi.rows; i++) {
+			for (int j = 0; j < mask_roi.cols; j++) {
+				if (mask_roi.at<unsigned char>(i, j) == 255) {
 					label_roi.at<unsigned char>(i, j) = GC_PR_FGD;
 				}
 				else label_roi.at<unsigned char>(i, j) = GC_PR_BGD;
@@ -338,12 +337,15 @@ void Segmentation::draw_segmentation_GB_mask(cv::Mat src, cv::Mat& dst, cv::Mat&
 		}
 		// nota: leggermente più preciso aumentando iterazioni ma molto più lento
 		grabCut(src_ycc, label_mask, Rect(x, y, w, h), bg1, fg1, 1, GC_INIT_WITH_MASK);
-		Vec3b black(0, 0, 0);
+		bool segmentation_present = false;
 		for (int i = 0; i < dst.rows; i++) {
 			for (int j = 0; j < dst.cols; j++) {
 				if (label_mask.at<unsigned char>(i, j) == GC_PR_FGD || label_mask.at<unsigned char>(i, j) == GC_FGD) {
+					segmentation_present = true;
 					out_mask.at<unsigned char>(i, j) = 255;
-					dst.at<Vec3b>(i, j) = colors[k] * 0.3;
+					if(!class_labels.empty()) dst.at<Vec3b>(i, j) = colors[class_labels[k]] * 0.3;
+					else dst.at<Vec3b>(i, j) = colors[k] * 0.3;
+
 					//verifica se i pixel appartengono già a un altra mano e li riassegna in base a distanza/dimensione bb (non grandi risultati)
 					/*
 					if (dst.at<Vec3b>(i, j) == black) {
@@ -363,6 +365,21 @@ void Segmentation::draw_segmentation_GB_mask(cv::Mat src, cv::Mat& dst, cv::Mat&
 						else { dst.at<Vec3b>(i, j) = colors[found_index];  }
 					}*/
 					
+				}
+			}
+		}
+		
+		if (!segmentation_present && ( (h*w)<(src.rows*src.cols/10) )  ) {
+			Mat dst_roi(dst(Rect(x, y, w, h)));
+			Mat out_mask_roi(out_mask(Rect(x, y, w, h)));
+
+			for (int i = 0; i < dst_roi.rows; i++) {
+				for (int j = 0; j < dst_roi.cols; j++) {
+					if (mask_roi.at<unsigned char>(i, j) == 255) {
+						if (!class_labels.empty()) dst_roi.at<Vec3b>(i, j) = colors[class_labels[k]] * 0.3;
+						else dst_roi.at<Vec3b>(i, j) = colors[k] * 0.3;
+						out_mask_roi.at<unsigned char>(i, j) = 255;
+					}
 				}
 			}
 		}

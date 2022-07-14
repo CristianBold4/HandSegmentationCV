@@ -11,7 +11,7 @@ int main(int argc, char** argv) {
 	Segmentation seg = Segmentation();
 	string bb_path, rgb_path, mask_path;
 	vector<int> test_indeces = {   1,2,3,4,5,6,7,8,9,10, 11,12,13,14,15,16,17,18,19,20 };
-	//vector<int> test_indeces = { 17 };	//use this vector to choose images from test dataset
+	//vector<int> test_indeces = { 5 };	//use this vector to choose images from test dataset
 	int test_image_num = 1;
 	int test_num = 1;
 	string method = "GrabCut-mask";
@@ -44,6 +44,7 @@ int main(int argc, char** argv) {
 		}
 		vector<array<int, 4>> boxes_vec;
 		vector<int> class_labels;
+	
 		//seg.read_bb_file(bb_path, boxes_vec);
 		seg.read_bb_file_label(bb_path, boxes_vec, class_labels);
 		//for (int i = 0; i < class_labels.size(); i++) cout << class_labels[i] << "\n";
@@ -54,8 +55,9 @@ int main(int argc, char** argv) {
 		seg.show_image(src_bb, to_string(test_image_num) + ")src_bb");
 
 		//NORMAL
-		Mat gt_segmentation;
-		seg.apply_mask(src, gt_segmentation, gt_mask, true);
+		//Mat gt_segmentation;
+		//seg.apply_mask(src, gt_segmentation, gt_mask, true);
+		//seg.draw_box_image(gt_segmentation, gt_segmentation, boxes_vec);
 		//seg.show_image(gt_segmentation, to_string(test_indeces[k]) + ") GT segmentation");
 
 		//Mat pyr_filtered;
@@ -66,17 +68,17 @@ int main(int argc, char** argv) {
 		Mat difference, tres_diff, gb_th;
 		seg.difference_from_center_hand_label(src, difference, boxes_vec, class_labels);
 		//seg.difference_from_center_hand(src, difference, boxes_vec);
-		//seg.show_image(difference, to_string(test_indeces[k]) + ") difference from skin");
+		//seg.show_image(difference*5, to_string(test_indeces[k]) + ") difference from skin"); //difference multiplied for visualization
 
 		seg.treshold_difference(difference, tres_diff, boxes_vec);
 		//seg.show_image(tres_diff, to_string(test_indeces[k]) + ") difference tresholded");
 		
-		seg.draw_segmentation_GB_mask(src, gb_th, tres_diff, boxes_vec);
+		seg.draw_segmentation_GB_mask(src, gb_th, tres_diff, boxes_vec, class_labels);
 		//seg.show_image(gb_th,to_string(test_indeces[k]) +") GB mask");
 		//seg.show_image(tres_diff, to_string(test_indeces[k]) + ") bin mask");
 
 		seg.apply_mask(src, gb_th, gb_th, false);
-		//seg.show_image(gb_th, to_string(test_indeces[k]) +") GB-mask segmentation");
+		seg.show_image(gb_th, to_string(test_indeces[k]) +") GB-mask segmentation");
 
 		cvtColor(gt_mask, gt_mask, COLOR_BGR2GRAY);
 		
@@ -89,8 +91,8 @@ int main(int argc, char** argv) {
 		cout << "Img " << to_string(test_image_num) << ")	" << "PA: " << pixel_accuracy << arrow << ";	IOU: " << IOU <<  " \n";
 		out_file << "Img " << to_string(test_image_num) << ")	" << "PA: " << pixel_accuracy << arrow << ";	IOU: " << IOU << " \n";
 
-		seg.draw_box_image(gb_th, gb_th, boxes_vec);
-		seg.show_image(gb_th, to_string(test_indeces[k]) + ") GB-mask segmentation+bb");
+		//seg.draw_box_image_label(gb_th, gb_th, boxes_vec,class_labels,false);
+		//seg.show_image(gb_th, to_string(test_indeces[k]) + ") GB-mask segmentation+bb");
 			
 	}
 	

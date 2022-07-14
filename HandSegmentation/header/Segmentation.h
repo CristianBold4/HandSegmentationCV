@@ -11,6 +11,14 @@ private:
 public:
 	
 	void show_image(cv::Mat to_show, std::string window_name);
+
+	/*
+method that parse the txt file that contains the bounding boxes cordinates and return an array containing such cordinates
+The cordinates are expressed as : [ (top-lef corner x cordinate), (top-lef corner y cordinate), (width), (heigth) ]
+
+@param path of the txt file that contains the bounding boxes cordinates.
+@param bb_vector a vector of array, each array containing the cordinates of a single bounding boxe.
+**/
 	void  read_bb_file(std::string path, std::vector<std::array<int, 4>>& bb_vector);
 	void read_bb_file_label(std::string path, std::vector<std::array<int, 4>>& bb_vector, std::vector<int>& class_labels);
 	void draw_box_image(cv::Mat src, cv::Mat& dst, std::vector<std::array<int, 4>> bound_boxes);
@@ -19,7 +27,7 @@ public:
 	
 	void draw_segmentation_Km(cv::Mat src, cv::Mat& dst, cv::Mat& bin_mask, std::vector<std::array<int, 4>> bound_boxes);
 	void draw_segmentation_GB(cv::Mat src, cv::Mat& dst, cv::Mat& bin_mask, std::vector<std::array<int, 4>> bound_boxes);
-	void draw_segmentation_GB_mask(cv::Mat src, cv::Mat& dst, cv::Mat& mask, std::vector<std::array<int, 4>> bound_boxes);
+	void draw_segmentation_GB_mask(cv::Mat src, cv::Mat& dst, cv::Mat& mask, std::vector<std::array<int, 4>> bound_boxes, std::vector<int> class_labels);
 	
 	void difference_from_center_hand(cv::Mat src, cv::Mat& dst, std::vector<std::array<int, 4>> bound_boxes);
 	void difference_from_center_hand_label(cv::Mat src, cv::Mat& dst, std::vector<std::array<int, 4>> bound_boxes, std::vector<int>& class_labels);
