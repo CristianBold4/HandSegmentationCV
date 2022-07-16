@@ -14,7 +14,7 @@ int main(int argc, char** argv) {
 	//vector<int> test_indeces = { 17 };	//use this vector to choose images from test dataset
 	
 	int test_num = 2;
-	string method = "K-means";
+	string method = "Grabcut, 2 iteration, changed diff cmpt";
 	string out_name = "segmentation_results_v" + to_string(test_num) + ".txt";
 	ofstream out_file(out_name);
 	out_file << "SEGMENTATION RESULTS\nMethod used: " << method << ";\ntest num. " << test_num<< "\n\n";
@@ -47,14 +47,14 @@ int main(int argc, char** argv) {
 		vector<array<int, 4>> boxes_vec;
 		vector<int> class_labels;
 	
-		
-		seg.read_bb_file_label(src.rows, src.cols, bb_path, boxes_vec, class_labels);
-		//boxes_vec = seg.get_wide_cordinates(src.rows, src.cols, boxes_vec);
-
 		Mat src_bb;
-		seg.draw_box_image_label(src, src_bb, boxes_vec, class_labels, true);
-		//seg.draw_box_image(src, src_bb, boxes_vec);
+		seg.read_bb_file_label(src.rows, src.cols, bb_path, boxes_vec, class_labels);
+		//seg.draw_box_image_label(src, src_bb, boxes_vec, class_labels, true);
 		//seg.show_image(src_bb, to_string(test_image_num) + ")src_bb");
+	
+		//boxes_vec = seg.get_wide_cordinates(src.rows, src.cols, boxes_vec);
+		//seg.draw_box_image_label(src, src_bb, boxes_vec, class_labels, true);
+		//seg.show_image(src_bb, to_string(test_image_num) + ")src_bb wide");
 
 		
 		//Mat gt_segmentation;
@@ -67,10 +67,10 @@ int main(int argc, char** argv) {
 		//seg.show_image(pyr_filtered, to_string(test_indeces[k]) + ") pyrMeanShiftFiltered");
 
 		//compute difference image
-		Mat difference, tres_diff, gb_th;
+		Mat  tres_diff, gb_th;
 		vector<Mat> difference_bb_vec;
 		seg.difference_from_center_hand_label(src, difference_bb_vec, boxes_vec, class_labels);
-		//seg.show_image(difference*5, to_string(test_indeces[k]) + ") difference from skin"); //difference multiplied for visualization
+	
 
 		vector<Mat> treshold_bb_vec;
 		seg.treshold_difference(difference_bb_vec, treshold_bb_vec, boxes_vec);
@@ -83,7 +83,7 @@ int main(int argc, char** argv) {
 		//seg.draw_segmentation_Km(src, gb_th, tres_diff, boxes_vec, class_labels);
 
 		seg.apply_mask(src, gb_th, gb_th, false);
-		//seg.show_image(gb_th, to_string(test_indeces[k]) +") GB-mask segmentation");
+		seg.show_image(gb_th, to_string(test_indeces[k]) +") GB-mask segmentation");
 
 		cvtColor(gt_mask, gt_mask, COLOR_BGR2GRAY);
 		
@@ -97,7 +97,7 @@ int main(int argc, char** argv) {
 		out_file << "Img " << to_string(test_image_num) << ")	" << "PA: " << pixel_accuracy << arrow << ";	IOU: " << IOU << " \n";
 
 		seg.draw_box_image_label(gb_th, gb_th, boxes_vec,class_labels,false);
-		seg.show_image(gb_th, to_string(test_indeces[k]) + ") GB-mask segmentation+bb");
+		//seg.show_image(gb_th, to_string(test_indeces[k]) + ") GB-mask segmentation+bb");
 			
 	}
 	
