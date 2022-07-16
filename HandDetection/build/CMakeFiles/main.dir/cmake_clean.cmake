@@ -1,10 +1,7 @@
 file(REMOVE_RECURSE
   "CMakeFiles/main.dir/code/Detection.cpp.o"
-  "CMakeFiles/main.dir/code/Detection.cpp.o.d"
   "CMakeFiles/main.dir/code/main.cpp.o"
-  "CMakeFiles/main.dir/code/main.cpp.o.d"
-  "libmain.dll.a"
-  "main.exe"
+  "main"
   "main.pdb"
 )
 

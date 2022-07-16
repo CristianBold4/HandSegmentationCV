@@ -66,32 +66,32 @@ void Detection::read_bb_file(const string &path, vector<array<int, 4>> &bb_vecto
 
 // Draw the predicted bounding box.
 void Detection::draw_label(Mat &input_image, string label, int left, int top) {
-    // Display the label at the top of the bounding box.
-    int baseLine;
-    Size label_size = getTextSize(label, FONT_FACE, FONT_SCALE, THICKNESS, &baseLine);
-    top = max(top, label_size.height);
-    // Top left corner.
-    Point tlc = Point(left, top);
-    // Bottom right corner.
-    Point brc = Point(left + label_size.width, top + label_size.height + baseLine);
-    // Draw black rectangle.
-    rectangle(input_image, tlc, brc, BLACK, FILLED);
-    // Put the label on the black rectangle.
-    putText(input_image, label, Point(left, top + label_size.height), FONT_FACE, FONT_SCALE, YELLOW, THICKNESS);
+	// Display the label at the top of the bounding box.
+	int baseLine;
+	Size label_size = getTextSize(label, FONT_FACE, FONT_SCALE, THICKNESS, &baseLine);
+	top = max(top, label_size.height);
+	// Top left corner.
+	Point tlc = Point(left, top);
+	// Bottom right corner.
+	Point brc = Point(left + label_size.width, top + label_size.height + baseLine);
+	// Draw black rectangle.
+	rectangle(input_image, tlc, brc, BLACK, FILLED);
+	// Put the label on the black rectangle.
+	putText(input_image, label, Point(left, top + label_size.height), FONT_FACE, FONT_SCALE, YELLOW, THICKNESS);
 }
 
 vector<Mat> Detection::pre_process(Mat &input_image) {
-    // Convert to blob.
-    Mat blob;
-    blobFromImage(input_image, blob, 1. / 255., Size(INPUT_WIDTH, INPUT_HEIGHT), Scalar(), true, false);
+	// Convert to blob.
+	Mat blob;
+	blobFromImage(input_image, blob, 1. / 255., Size(INPUT_WIDTH, INPUT_HEIGHT), Scalar(), true, false);
 
-    net.setInput(blob);
+	net.setInput(blob);
 
-    // Forward propagate.
-    vector<Mat> outputs;
-    net.forward(outputs, net.getUnconnectedOutLayersNames());
+	// Forward propagate.
+	vector<Mat> outputs;
+	net.forward(outputs, net.getUnconnectedOutLayersNames());
 
-    return outputs;
+	return outputs;
 }
 
 string Detection::compute_IoU(array<int, 4> pred_boxes_vec[4], vector<array<int, 4>> gr_boxes_vec) {
@@ -315,7 +315,7 @@ void Detection::make_detection(cv::Mat &frame, const std::string& ground_truth_p
 // -- test method to write all testset predicted bounding boxes
 void Detection::make_detection_testset(int N_IMAGES) {
 
-    ofstream outfile_IoU("./test_results/pred_boxes.txt");
+    ofstream outfile_IoU("./test_results/pred_boxes_1.txt");
 
     for (int j = 1; j <= N_IMAGES; j++) {
 
@@ -381,7 +381,7 @@ void Detection::make_detection_testset(int N_IMAGES) {
 // test method to compute average IoU on testset
 void Detection::compute_avg_IoU_testset(int N_IMAGES) {
 
-    ofstream outfile_IoU("./test_results/IoU.txt");
+    ofstream outfile_IoU("./test_results/IoU_model2.txt");
 
     for (int j = 1; j <= N_IMAGES; j++) {
 
