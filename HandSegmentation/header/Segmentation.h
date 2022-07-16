@@ -7,11 +7,11 @@ private:
 	
 	std::array<cv::Vec3b,4> colors = { cv::Vec3b(255, 0, 127),cv::Vec3b(0,255, 255),cv::Vec3b(0, 0, 255),cv::Vec3b(0,204, 0) };
 	cv::Vec<float,3> trasparency_colors[4] = { cv::Vec<float,3>(2,0.8, 0.8),cv::Vec<float,3>(0.8, 2, 0.8),cv::Vec<float,3>(0.8, 0.8, 2),cv::Vec<float,3>(2, 0.8, 2) };
-
+	bool valid_bb_cordinates(int src_r, int src_c, std::vector<std::array<int, 4>> bb_vector);
 
 public:
 	
-	bool valid_bb_cordinates(int src_r, int src_c, std::vector<std::array<int, 4>> bb_vector);
+
 
 	void show_image(cv::Mat to_show, std::string window_name);
 
