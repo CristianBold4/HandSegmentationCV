@@ -63,9 +63,9 @@ class Detection {
         std::string compute_IoU(std::array<int,4> pred_boxes_vec[4], std::vector<std::array<int,4>> gr_boxes_vec);
 
         void post_process(cv::Mat &input_image, std::vector<cv::Mat> &outputs, const std::vector<std::string> &class_name,
-                             std::vector<std::array<int, 4>> gr_boxes_vec, std::string &IoU, std::vector<std::array<int,4>> &pred_boxes);
+                             std::vector<std::array<int, 4>> gr_boxes_vec, std::string &IoU, std::array<int, 4> ordered_bb[4]);
 
-        void write_output(std::vector<std::array<int,4>> &pred_boxes);
+        void write_output(std::array<int, 4> ordered_bb[4]);
 
         void make_detection_testset(int N_IMAGES);
 

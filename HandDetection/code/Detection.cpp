@@ -161,16 +161,17 @@ string Detection::compute_IoU(array<int, 4> pred_boxes_vec[4], vector<array<int,
     return out;
 }
 
-void Detection::write_output(std::vector<std::array<int, 4>> &pred_boxes) {
+void Detection::write_output(array<int, 4> ordered_bb[4]) {
 
     ofstream outfile("./output/out.txt");
 
     // write orderd output
-    for (int i = 0; i < pred_boxes.size(); i++) {
+    for (int i = 0; i < 4; i++) {
         //write the output with class id
-        outfile << pred_boxes[i][0] << " " << pred_boxes[i][1] << " " << pred_boxes[i][2] << " " << pred_boxes[i][3]
-                << " " << i << " " << "\n";
-
+        if (ordered_bb[i][0] != -1) {
+            outfile << ordered_bb[i][0] << " " << ordered_bb[i][1] << " " << ordered_bb[i][2] << " " << ordered_bb[i][3]
+                    << " " << i << " " << "\n";
+        }
 
     }
 
@@ -178,7 +179,8 @@ void Detection::write_output(std::vector<std::array<int, 4>> &pred_boxes) {
 }
 
 void Detection::post_process(Mat &input_image, vector<Mat> &outputs, const vector<string> &class_name,
-                             vector<array<int, 4>> gr_boxes_vec, string &IoU, vector<array<int, 4>> &pred_boxes) {
+                             vector<array<int, 4>> gr_boxes_vec, string &IoU, array<int, 4> ordered_bb[4]) {
+
     // Initialize vectors to hold respective outputs while unwrapping detections.
     vector<int> class_ids;
     vector<float> confidences;
@@ -238,7 +240,7 @@ void Detection::post_process(Mat &input_image, vector<Mat> &outputs, const vecto
     NMSBoxes(boxes, confidences, SCORE_THRESHOLD, NMS_THRESHOLD, indices);
 
 
-    array<int, 4> ordered_bb[4];
+    //array<int, 4> ordered_bb[4];
     // init array
     for (int i = 0; i < 4; i++) {
         ordered_bb[i][0] = -1;
@@ -279,13 +281,6 @@ void Detection::post_process(Mat &input_image, vector<Mat> &outputs, const vecto
 
     IoU = compute_IoU(ordered_bb, gr_boxes_vec);
 
-    pred_boxes.clear();
-    for (int i = 0; i < 4; i++) {
-        if (ordered_bb[i][0] != -1) {
-            pred_boxes.push_back(ordered_bb[i]);
-        }
-    }
-
 }
 
 void Detection::make_detection(cv::Mat &frame, const std::string& ground_truth_path) {
@@ -297,8 +292,8 @@ void Detection::make_detection(cv::Mat &frame, const std::string& ground_truth_p
     read_bb_file(ground_truth_path, gr_boxes_vec);
 
     string IoU;
-    vector<array<int, 4>> pred_boxes;
-    post_process(frame, detections, class_list, gr_boxes_vec, IoU, pred_boxes);
+    array<int, 4> ordered_bb [4];
+    post_process(frame, detections, class_list, gr_boxes_vec, IoU, ordered_bb);
 
     // -- Put efficiency information.
     // -- The function getPerfProfile returns the overall time for inference(t) and the timings for each of the layers(in layersTimes)
@@ -311,7 +306,7 @@ void Detection::make_detection(cv::Mat &frame, const std::string& ground_truth_p
     cout << inference_time << endl;
 
     // -- write the output
-    write_output(pred_boxes);
+    write_output(ordered_bb);
 
 }
 
@@ -352,20 +347,23 @@ void Detection::make_detection_testset(int N_IMAGES) {
 
 
         // read ground truth
-        vector<array<int, 4>> gr_boxes_vec, pred_boxes;
+        vector<array<int, 4>> gr_boxes_vec;
+        array<int, 4> ordered_bb [4];
         read_bb_file(det_path, gr_boxes_vec);
 
         string IoU;
 
-        post_process(frame, detections, class_list, gr_boxes_vec, IoU, pred_boxes);
+        post_process(frame, detections, class_list, gr_boxes_vec, IoU, ordered_bb);
 
         string bboxes;
 
-        for (int i = 0; i < pred_boxes.size(); i++) {
-            //write the output with class id
-            bboxes += to_string(pred_boxes[i][0]) += string(" ") += to_string(pred_boxes[i][1]) += string(" ") +=
-                    to_string(pred_boxes[i][2]) += string(" ") += to_string(pred_boxes[i][3])
-                            += string(" ") += to_string(i) += "\n";
+        for (int i = 0; i <4; i++) {
+            if (ordered_bb[i][0] != -1) {
+                //write the output with class id
+                bboxes += to_string(ordered_bb[i][0]) += string(" ") += to_string(ordered_bb[i][1]) += string(" ") +=
+                to_string(ordered_bb[i][2]) += string(" ") += to_string(ordered_bb[i][3])
+                        += string(" ") += to_string(i) += "\n";
+            }
         }
 
         // write results
@@ -415,12 +413,13 @@ void Detection::compute_avg_IoU_testset(int N_IMAGES) {
 
 
         // read ground truth
-        vector<array<int, 4>> gr_boxes_vec, pred_boxes;
+        vector<array<int, 4>> gr_boxes_vec;
+        array<int, 4> ordered_bb [4];
         read_bb_file(det_path, gr_boxes_vec);
 
         string IoU;
 
-        post_process(frame, detections, class_list, gr_boxes_vec, IoU, pred_boxes);
+        post_process(frame, detections, class_list, gr_boxes_vec, IoU, ordered_bb);
 
         // write results
         outfile_IoU << img_path << "\n\n" << IoU << "\n" << "---------------------" << "\n";
