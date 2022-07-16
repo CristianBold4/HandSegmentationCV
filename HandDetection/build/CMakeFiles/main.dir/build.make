@@ -43,10 +43,10 @@ RM = /usr/bin/cmake -E remove -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/local/boldcri21288/Desktop/HandDetectionFinal
+CMAKE_SOURCE_DIR = /home/local/boldcri21288/Desktop/mod/HandDetection
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/local/boldcri21288/Desktop/HandDetectionFinal/build
+CMAKE_BINARY_DIR = /home/local/boldcri21288/Desktop/mod/HandDetection/build
 
 # Include any dependencies generated for this target.
 include CMakeFiles/main.dir/depend.make
@@ -57,27 +57,42 @@ include CMakeFiles/main.dir/progress.make
 # Include the compile flags for this target's objects.
 include CMakeFiles/main.dir/flags.make
 
-CMakeFiles/main.dir/yolov5.cpp.o: CMakeFiles/main.dir/flags.make
-CMakeFiles/main.dir/yolov5.cpp.o: ../yolov5.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/local/boldcri21288/Desktop/HandDetectionFinal/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/main.dir/yolov5.cpp.o"
-	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/main.dir/yolov5.cpp.o -c /home/local/boldcri21288/Desktop/HandDetectionFinal/yolov5.cpp
+CMakeFiles/main.dir/code/main.cpp.o: CMakeFiles/main.dir/flags.make
+CMakeFiles/main.dir/code/main.cpp.o: ../code/main.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/local/boldcri21288/Desktop/mod/HandDetection/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/main.dir/code/main.cpp.o"
+	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/main.dir/code/main.cpp.o -c /home/local/boldcri21288/Desktop/mod/HandDetection/code/main.cpp
 
-CMakeFiles/main.dir/yolov5.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/main.dir/yolov5.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/local/boldcri21288/Desktop/HandDetectionFinal/yolov5.cpp > CMakeFiles/main.dir/yolov5.cpp.i
+CMakeFiles/main.dir/code/main.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/main.dir/code/main.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/local/boldcri21288/Desktop/mod/HandDetection/code/main.cpp > CMakeFiles/main.dir/code/main.cpp.i
 
-CMakeFiles/main.dir/yolov5.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/main.dir/yolov5.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/local/boldcri21288/Desktop/HandDetectionFinal/yolov5.cpp -o CMakeFiles/main.dir/yolov5.cpp.s
+CMakeFiles/main.dir/code/main.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/main.dir/code/main.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/local/boldcri21288/Desktop/mod/HandDetection/code/main.cpp -o CMakeFiles/main.dir/code/main.cpp.s
+
+CMakeFiles/main.dir/code/Detection.cpp.o: CMakeFiles/main.dir/flags.make
+CMakeFiles/main.dir/code/Detection.cpp.o: ../code/Detection.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/local/boldcri21288/Desktop/mod/HandDetection/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/main.dir/code/Detection.cpp.o"
+	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/main.dir/code/Detection.cpp.o -c /home/local/boldcri21288/Desktop/mod/HandDetection/code/Detection.cpp
+
+CMakeFiles/main.dir/code/Detection.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/main.dir/code/Detection.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/local/boldcri21288/Desktop/mod/HandDetection/code/Detection.cpp > CMakeFiles/main.dir/code/Detection.cpp.i
+
+CMakeFiles/main.dir/code/Detection.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/main.dir/code/Detection.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/local/boldcri21288/Desktop/mod/HandDetection/code/Detection.cpp -o CMakeFiles/main.dir/code/Detection.cpp.s
 
 # Object files for target main
 main_OBJECTS = \
-"CMakeFiles/main.dir/yolov5.cpp.o"
+"CMakeFiles/main.dir/code/main.cpp.o" \
+"CMakeFiles/main.dir/code/Detection.cpp.o"
 
 # External object files for target main
 main_EXTERNAL_OBJECTS =
 
-main: CMakeFiles/main.dir/yolov5.cpp.o
+main: CMakeFiles/main.dir/code/main.cpp.o
+main: CMakeFiles/main.dir/code/Detection.cpp.o
 main: CMakeFiles/main.dir/build.make
 main: /usr/local/lib/libopencv_gapi.so.4.5.2
 main: /usr/local/lib/libopencv_stitching.so.4.5.2
@@ -136,7 +151,7 @@ main: /usr/local/lib/libopencv_photo.so.4.5.2
 main: /usr/local/lib/libopencv_imgproc.so.4.5.2
 main: /usr/local/lib/libopencv_core.so.4.5.2
 main: CMakeFiles/main.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/local/boldcri21288/Desktop/HandDetectionFinal/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Linking CXX executable main"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/local/boldcri21288/Desktop/mod/HandDetection/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Linking CXX executable main"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/main.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.
@@ -149,6 +164,6 @@ CMakeFiles/main.dir/clean:
 .PHONY : CMakeFiles/main.dir/clean
 
 CMakeFiles/main.dir/depend:
-	cd /home/local/boldcri21288/Desktop/HandDetectionFinal/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/local/boldcri21288/Desktop/HandDetectionFinal /home/local/boldcri21288/Desktop/HandDetectionFinal /home/local/boldcri21288/Desktop/HandDetectionFinal/build /home/local/boldcri21288/Desktop/HandDetectionFinal/build /home/local/boldcri21288/Desktop/HandDetectionFinal/build/CMakeFiles/main.dir/DependInfo.cmake --color=$(COLOR)
+	cd /home/local/boldcri21288/Desktop/mod/HandDetection/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/local/boldcri21288/Desktop/mod/HandDetection /home/local/boldcri21288/Desktop/mod/HandDetection /home/local/boldcri21288/Desktop/mod/HandDetection/build /home/local/boldcri21288/Desktop/mod/HandDetection/build /home/local/boldcri21288/Desktop/mod/HandDetection/build/CMakeFiles/main.dir/DependInfo.cmake --color=$(COLOR)
 .PHONY : CMakeFiles/main.dir/depend
 

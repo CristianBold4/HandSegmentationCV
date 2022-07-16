@@ -48,10 +48,10 @@ RM = /usr/bin/cmake -E remove -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/local/boldcri21288/Desktop/HandDetectionFinal
+CMAKE_SOURCE_DIR = /home/local/boldcri21288/Desktop/mod/HandDetection
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/local/boldcri21288/Desktop/HandDetectionFinal/build
+CMAKE_BINARY_DIR = /home/local/boldcri21288/Desktop/mod/HandDetection/build
 
 #=============================================================================
 # Targets provided globally by CMake.
@@ -80,9 +80,9 @@ edit_cache/fast: edit_cache
 
 # The main all target
 all: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/local/boldcri21288/Desktop/HandDetectionFinal/build/CMakeFiles /home/local/boldcri21288/Desktop/HandDetectionFinal/build/CMakeFiles/progress.marks
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/local/boldcri21288/Desktop/mod/HandDetection/build/CMakeFiles /home/local/boldcri21288/Desktop/mod/HandDetection/build/CMakeFiles/progress.marks
 	$(MAKE) -f CMakeFiles/Makefile2 all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/local/boldcri21288/Desktop/HandDetectionFinal/build/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/local/boldcri21288/Desktop/mod/HandDetection/build/CMakeFiles 0
 .PHONY : all
 
 # The main clean target
@@ -123,32 +123,59 @@ main/fast:
 	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/build
 .PHONY : main/fast
 
-yolov5.o: yolov5.cpp.o
+code/Detection.o: code/Detection.cpp.o
 
-.PHONY : yolov5.o
+.PHONY : code/Detection.o
 
 # target to build an object file
-yolov5.cpp.o:
-	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/yolov5.cpp.o
-.PHONY : yolov5.cpp.o
+code/Detection.cpp.o:
+	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/code/Detection.cpp.o
+.PHONY : code/Detection.cpp.o
 
-yolov5.i: yolov5.cpp.i
+code/Detection.i: code/Detection.cpp.i
 
-.PHONY : yolov5.i
+.PHONY : code/Detection.i
 
 # target to preprocess a source file
-yolov5.cpp.i:
-	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/yolov5.cpp.i
-.PHONY : yolov5.cpp.i
+code/Detection.cpp.i:
+	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/code/Detection.cpp.i
+.PHONY : code/Detection.cpp.i
 
-yolov5.s: yolov5.cpp.s
+code/Detection.s: code/Detection.cpp.s
 
-.PHONY : yolov5.s
+.PHONY : code/Detection.s
 
 # target to generate assembly for a file
-yolov5.cpp.s:
-	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/yolov5.cpp.s
-.PHONY : yolov5.cpp.s
+code/Detection.cpp.s:
+	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/code/Detection.cpp.s
+.PHONY : code/Detection.cpp.s
+
+code/main.o: code/main.cpp.o
+
+.PHONY : code/main.o
+
+# target to build an object file
+code/main.cpp.o:
+	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/code/main.cpp.o
+.PHONY : code/main.cpp.o
+
+code/main.i: code/main.cpp.i
+
+.PHONY : code/main.i
+
+# target to preprocess a source file
+code/main.cpp.i:
+	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/code/main.cpp.i
+.PHONY : code/main.cpp.i
+
+code/main.s: code/main.cpp.s
+
+.PHONY : code/main.s
+
+# target to generate assembly for a file
+code/main.cpp.s:
+	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/code/main.cpp.s
+.PHONY : code/main.cpp.s
 
 # Help Target
 help:
@@ -159,9 +186,12 @@ help:
 	@echo "... rebuild_cache"
 	@echo "... edit_cache"
 	@echo "... main"
-	@echo "... yolov5.o"
-	@echo "... yolov5.i"
-	@echo "... yolov5.s"
+	@echo "... code/Detection.o"
+	@echo "... code/Detection.i"
+	@echo "... code/Detection.s"
+	@echo "... code/main.o"
+	@echo "... code/main.i"
+	@echo "... code/main.s"
 .PHONY : help
 
 

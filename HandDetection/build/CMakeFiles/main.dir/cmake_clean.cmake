@@ -1,5 +1,6 @@
 file(REMOVE_RECURSE
-  "CMakeFiles/main.dir/yolov5.cpp.o"
+  "CMakeFiles/main.dir/code/Detection.cpp.o"
+  "CMakeFiles/main.dir/code/main.cpp.o"
   "main"
   "main.pdb"
 )

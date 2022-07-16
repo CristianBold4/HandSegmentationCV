@@ -4,7 +4,8 @@ set(CMAKE_DEPENDS_LANGUAGES
   )
 # The set of files for implicit dependencies of each language:
 set(CMAKE_DEPENDS_CHECK_CXX
-  "/home/local/boldcri21288/Desktop/HandDetectionFinal/yolov5.cpp" "/home/local/boldcri21288/Desktop/HandDetectionFinal/build/CMakeFiles/main.dir/yolov5.cpp.o"
+  "/home/local/boldcri21288/Desktop/mod/HandDetection/code/Detection.cpp" "/home/local/boldcri21288/Desktop/mod/HandDetection/build/CMakeFiles/main.dir/code/Detection.cpp.o"
+  "/home/local/boldcri21288/Desktop/mod/HandDetection/code/main.cpp" "/home/local/boldcri21288/Desktop/mod/HandDetection/build/CMakeFiles/main.dir/code/main.cpp.o"
   )
 set(CMAKE_CXX_COMPILER_ID "GNU")
 
