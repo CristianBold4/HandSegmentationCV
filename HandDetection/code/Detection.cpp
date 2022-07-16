@@ -11,9 +11,22 @@ using namespace cv;
 using namespace std;
 using namespace cv::dnn;
 
+Detection::Detection(const std::string &class_list_path, const std::string &net_path) {
+    // Load class list.
+    ifstream ifs(class_list_path);
+    string line;
 
-void Detection::read_bb_file(string path, vector<array<int, 4>>& bb_vector)
-{
+
+    while (getline(ifs, line)) {
+        this->class_list.push_back(line);
+    }
+
+    // Load model: read net
+    this->net = readNet(net_path);
+
+}
+
+void Detection::read_bb_file(const string &path, vector<array<int, 4>> &bb_vector) {
     String line;
     vector<String> line_vec;
     vector<array<int, 4>> boxes;
@@ -52,8 +65,7 @@ void Detection::read_bb_file(string path, vector<array<int, 4>>& bb_vector)
 }
 
 // Draw the predicted bounding box.
-void Detection::draw_label(Mat& input_image, string label, int left, int top)
-{
+void Detection::draw_label(Mat &input_image, string label, int left, int top) {
     // Display the label at the top of the bounding box.
     int baseLine;
     Size label_size = getTextSize(label, FONT_FACE, FONT_SCALE, THICKNESS, &baseLine);
@@ -68,11 +80,10 @@ void Detection::draw_label(Mat& input_image, string label, int left, int top)
     putText(input_image, label, Point(left, top + label_size.height), FONT_FACE, FONT_SCALE, YELLOW, THICKNESS);
 }
 
-vector<Mat> Detection::pre_process(Mat &input_image, Net &net)
-{
+vector<Mat> Detection::pre_process(Mat &input_image) {
     // Convert to blob.
     Mat blob;
-    blobFromImage(input_image, blob, 1./255., Size(INPUT_WIDTH, INPUT_HEIGHT), Scalar(), true, false);
+    blobFromImage(input_image, blob, 1. / 255., Size(INPUT_WIDTH, INPUT_HEIGHT), Scalar(), true, false);
 
     net.setInput(blob);
 
@@ -83,7 +94,7 @@ vector<Mat> Detection::pre_process(Mat &input_image, Net &net)
     return outputs;
 }
 
-string Detection::compute_IoU(array<int,4> pred_boxes_vec[4], vector<array<int,4>> gr_boxes_vec) {
+string Detection::compute_IoU(array<int, 4> pred_boxes_vec[4], vector<array<int, 4>> gr_boxes_vec) {
 
     int left, right, top, bottom, width, height;
     int gr_left, gr_right, gr_top, gr_bottom, gr_width, gr_height;
@@ -150,27 +161,24 @@ string Detection::compute_IoU(array<int,4> pred_boxes_vec[4], vector<array<int,4
     return out;
 }
 
-void Detection::write_output(array<int,4> ordered_bb [4]) {
+void Detection::write_output(std::vector<std::array<int, 4>> &pred_boxes) {
 
     ofstream outfile("./output/out.txt");
 
     // write orderd output
-    for (int i = 0; i < 4; i++) {
+    for (int i = 0; i < pred_boxes.size(); i++) {
+        //write the output with class id
+        outfile << pred_boxes[i][0] << " " << pred_boxes[i][1] << " " << pred_boxes[i][2] << " " << pred_boxes[i][3]
+                << " " << i << " " << "\n";
 
-        if (ordered_bb[i][0] != -1) {
-
-            //write the output with class id
-            outfile << ordered_bb[i][0] << " " << ordered_bb[i][1] << " " << ordered_bb[i][2] << " " << ordered_bb[i][3] << " " << i << " " << "\n";
-
-        }
 
     }
 
     outfile.close();
 }
 
-Mat Detection::post_process(Mat &input_image, vector<Mat> &outputs, const vector<string> &class_name, vector<array<int, 4>> gr_boxes_vec, string &IoU)
-{
+void Detection::post_process(Mat &input_image, vector<Mat> &outputs, const vector<string> &class_name,
+                             vector<array<int, 4>> gr_boxes_vec, string &IoU, vector<array<int, 4>> &pred_boxes) {
     // Initialize vectors to hold respective outputs while unwrapping detections.
     vector<int> class_ids;
     vector<float> confidences;
@@ -180,20 +188,18 @@ Mat Detection::post_process(Mat &input_image, vector<Mat> &outputs, const vector
     float x_factor = input_image.cols / INPUT_WIDTH;
     float y_factor = input_image.rows / INPUT_HEIGHT;
 
-    float *data = (float *)outputs[0].data;
+    float *data = (float *) outputs[0].data;
 
     // Network output dimensions
     const int dimensions = 9;
     const int rows = 25200;
 
     // Iterate through 25200 detections.
-    for (int i = 0; i < rows; ++i)
-    {
+    for (int i = 0; i < rows; ++i) {
         float confidence = data[4];
         // Discard bad detections and continue.
-        if (confidence >= CONFIDENCE_THRESHOLD)
-        {
-            float * classes_scores = data + 5;
+        if (confidence >= CONFIDENCE_THRESHOLD) {
+            float *classes_scores = data + 5;
             // Create a 1x85 Mat and store class scores of 80 classes.
             Mat scores(1, class_name.size(), CV_32FC1, classes_scores);
             // Perform minMaxLoc and acquire index of best class score.
@@ -201,8 +207,7 @@ Mat Detection::post_process(Mat &input_image, vector<Mat> &outputs, const vector
             double max_class_score;
             minMaxLoc(scores, 0, &max_class_score, 0, &class_id);
             // Continue if the class score is above the threshold.
-            if (max_class_score > SCORE_THRESHOLD)
-            {
+            if (max_class_score > SCORE_THRESHOLD) {
                 // Store class ID and confidence in the pre-defined respective vectors.
 
                 confidences.push_back(confidence);
@@ -228,21 +233,20 @@ Mat Detection::post_process(Mat &input_image, vector<Mat> &outputs, const vector
         data += 9;
     }
 
-    // Perform Non Maximum Suppression and draw predictions.
+    // Perform Non-Maximum Suppression and draw predictions.
     vector<int> indices;
     NMSBoxes(boxes, confidences, SCORE_THRESHOLD, NMS_THRESHOLD, indices);
 
 
-
-    array<int,4> ordered_bb [4];
+    array<int, 4> ordered_bb[4];
     // init array
     for (int i = 0; i < 4; i++) {
         ordered_bb[i][0] = -1;
     }
 
 
-    for (int i = 0; i < indices.size(); i++)
-    {
+    // -- compute bounding box coordinates
+    for (int i = 0; i < indices.size(); i++) {
         int idx = indices[i];
         Rect box = boxes[idx];
 
@@ -265,7 +269,8 @@ Mat Detection::post_process(Mat &input_image, vector<Mat> &outputs, const vector
 
 
         // Draw bounding box.
-        rectangle(input_image, Point(left, top), Point(left + width, top + height), LABELS_COLORS[class_ids[idx]], THICKNESS);
+        rectangle(input_image, Point(left, top), Point(left + width, top + height), LABELS_COLORS[class_ids[idx]],
+                  THICKNESS);
 
         // Draw class labels.
         draw_label(input_image, label, left, top);
@@ -274,19 +279,50 @@ Mat Detection::post_process(Mat &input_image, vector<Mat> &outputs, const vector
 
     IoU = compute_IoU(ordered_bb, gr_boxes_vec);
 
-    write_output(ordered_bb);
+    pred_boxes.clear();
+    for (int i = 0; i < 4; i++) {
+        if (ordered_bb[i][0] != -1) {
+            pred_boxes.push_back(ordered_bb[i]);
+        }
+    }
 
-
-    return input_image;
 }
 
+void Detection::make_detection(cv::Mat &frame, const std::string& ground_truth_path) {
+    vector<Mat> detections;
+    detections = pre_process(frame);
 
-// test method to compute average IoU on testset
-void Detection::compute_avg_IoU_testset(Net &net, vector<string> &class_list) {
+    // read ground truth
+    vector<array<int, 4>> gr_boxes_vec;
+    read_bb_file(ground_truth_path, gr_boxes_vec);
 
-    ofstream outfile_IoU("./IoU_results/results.txt");
+    string IoU;
+    vector<array<int, 4>> pred_boxes;
+    post_process(frame, detections, class_list, gr_boxes_vec, IoU, pred_boxes);
 
-    for (int j = 1; j <= 20; j++) {
+    // -- Put efficiency information.
+    // -- The function getPerfProfile returns the overall time for inference(t) and the timings for each of the layers(in layersTimes)
+
+    vector<double> layersTimes;
+    double freq = getTickFrequency() / 1000;
+    double t = net.getPerfProfile(layersTimes) / freq;
+    string inference_time = format("Inference time : %.2f ms", t);
+    //putText(img, label, Point(20, 40), FONT_FACE, FONT_SCALE, RED);
+    cout << inference_time << endl;
+
+    // -- write the output
+    write_output(pred_boxes);
+
+}
+
+// -- TEST METHODS
+
+// -- test method to write all testset predicted bounding boxes
+void Detection::make_detection_testset(int N_IMAGES) {
+
+    ofstream outfile_IoU("./test_results/pred_boxes.txt");
+
+    for (int j = 1; j <= N_IMAGES; j++) {
 
         // Load image.
         Mat frame;
@@ -305,9 +341,68 @@ void Detection::compute_avg_IoU_testset(Net &net, vector<string> &class_list) {
 
         frame = imread(img_path);
 
-        //frame = imread(argv[1]);
+        if (frame.empty()) {
+            cerr << "Error reading input image!\n";
+            return;
+        }
 
-        cout << img_path << endl;
+
+        vector<Mat> detections;
+        detections = pre_process(frame);
+
+
+        // read ground truth
+        vector<array<int, 4>> gr_boxes_vec, pred_boxes;
+        read_bb_file(det_path, gr_boxes_vec);
+
+        string IoU;
+
+        post_process(frame, detections, class_list, gr_boxes_vec, IoU, pred_boxes);
+
+        string bboxes;
+
+        for (int i = 0; i < pred_boxes.size(); i++) {
+            //write the output with class id
+            bboxes += to_string(pred_boxes[i][0]) += string(" ") += to_string(pred_boxes[i][1]) += string(" ") +=
+                    to_string(pred_boxes[i][2]) += string(" ") += to_string(pred_boxes[i][3])
+                            += string(" ") += to_string(i) += "\n";
+        }
+
+        // write results
+        outfile_IoU << img_path << "\n\n" << bboxes << "\n" << "---------------------" << "\n";
+
+
+    }
+
+    outfile_IoU.close();
+
+
+}
+
+
+// test method to compute average IoU on testset
+void Detection::compute_avg_IoU_testset(int N_IMAGES) {
+
+    ofstream outfile_IoU("./test_results/IoU.txt");
+
+    for (int j = 1; j <= N_IMAGES; j++) {
+
+        // Load image.
+        Mat frame;
+
+        string img_path, det_path;
+
+        if (j < 10) {
+            img_path = "./input/0" + to_string(j) + ".jpg";
+            det_path = "./det/0" + to_string(j) + ".txt";
+        } else {
+            img_path = "./input/" + to_string(j) + ".jpg";
+            det_path = "./det/" + to_string(j) + ".txt";
+
+        }
+
+
+        frame = imread(img_path);
 
         if (frame.empty()) {
             cerr << "Error reading input image!\n";
@@ -315,19 +410,17 @@ void Detection::compute_avg_IoU_testset(Net &net, vector<string> &class_list) {
         }
 
 
-
         vector<Mat> detections;
-        detections = pre_process(frame, net);
+        detections = pre_process(frame);
 
 
         // read ground truth
-        vector<array<int, 4>> gr_boxes_vec;
-        //read_bb_file(argv[2], gr_boxes_vec);
+        vector<array<int, 4>> gr_boxes_vec, pred_boxes;
         read_bb_file(det_path, gr_boxes_vec);
 
         string IoU;
 
-        Mat img = post_process(frame, detections, class_list, gr_boxes_vec, IoU);
+        post_process(frame, detections, class_list, gr_boxes_vec, IoU, pred_boxes);
 
         // write results
         outfile_IoU << img_path << "\n\n" << IoU << "\n" << "---------------------" << "\n";
@@ -335,9 +428,9 @@ void Detection::compute_avg_IoU_testset(Net &net, vector<string> &class_list) {
 
     }
 
-    cout << "Avg IoU: " << (counter/n_det) << endl;
+    cout << "Avg IoU: " << (counter / n_det) << endl;
     cout << "Total detections: " << n_det << endl;
-    outfile_IoU << "\n\nAvg IoU: " << (counter/n_det) << endl;
+    outfile_IoU << "\n\nAvg IoU: " << (counter / n_det) << endl;
 
     outfile_IoU.close();
 

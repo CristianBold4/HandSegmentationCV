@@ -16,8 +16,13 @@ class Detection {
 
     private:
 
+        //test vars
         float counter = 0;
         int n_det = 0;
+
+        //class vars
+        cv::dnn::Net net;
+        std::vector<std::string> class_list;
 
     public:
 
@@ -47,20 +52,26 @@ class Detection {
         // labels colors.
         const  cv::Scalar LABELS_COLORS [4] = {MY_LEFT, MY_RIGHT, YOUR_LEFT, YOUR_RIGHT};
 
-        void read_bb_file(std::string path, std::vector<std::array<int, 4>> &bb_vector);
+        Detection(const std::string& class_list_path, const std::string& net_path);
+
+        void read_bb_file(const std::string& path, std::vector<std::array<int, 4>> &bb_vector);
 
         void draw_label(cv::Mat& input_image, std::string label, int left, int top);
 
-        std::vector<cv::Mat> pre_process(cv::Mat &input_image, cv::dnn::Net &net);
+        std::vector<cv::Mat> pre_process(cv::Mat &input_image);
 
         std::string compute_IoU(std::array<int,4> pred_boxes_vec[4], std::vector<std::array<int,4>> gr_boxes_vec);
 
-        cv::Mat post_process(cv::Mat &input_image, std::vector<cv::Mat> &outputs, const std::vector<std::string> &class_name,
-                             std::vector<std::array<int, 4>> gr_boxes_vec, std::string &IoU);
+        void post_process(cv::Mat &input_image, std::vector<cv::Mat> &outputs, const std::vector<std::string> &class_name,
+                             std::vector<std::array<int, 4>> gr_boxes_vec, std::string &IoU, std::vector<std::array<int,4>> &pred_boxes);
 
-        void write_output(std::array<int,4> ordered_bb [4]);
+        void write_output(std::vector<std::array<int,4>> &pred_boxes);
 
-        void compute_avg_IoU_testset(cv::dnn::Net &net, std::vector<std::string> &class_list);
+        void make_detection_testset(int N_IMAGES);
+
+        void compute_avg_IoU_testset(int N_IMAGES);
+
+        void make_detection(cv::Mat &frame, const std::string& ground_truth_path);
 
 };
 

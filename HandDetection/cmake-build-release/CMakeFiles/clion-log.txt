@@ -1,0 +1,15 @@
+C:\Users\Cristian\AppData\Local\JetBrains\CLion2021.3\cygwin_cmake\bin\cmake.exe -DCMAKE_BUILD_TYPE=Release "-DCMAKE_MAKE_PROGRAM=/cygdrive/c/Program Files/JetBrains/CLion 2021.3.4/bin/ninja/cygwin/ninja.exe" -G Ninja "/cygdrive/c/Users/Cristian/Desktop/Università/4 anno/Secondo Semestre/Computer Vision/Final project/github/HandDetection"
+CMake Error: The source directory "/cygdrive/c/Users/Cristian/Desktop/Università/4 anno/Secondo Semestre/Computer Vision/Final project/github/HandDetection/cmake-build-release/"/cygdrive/c/Users/Cristian/Desktop/Università/4 anno/Secondo Semestre/Computer Vision/Final project/github/HandDetection"" does not exist.
+Specify --help for usage, or press the help button on the CMake GUI.
+
+CMake Error:
+  ------------------------------------------------------------------------------------
+  Selected CMake might be incompatible with the Cygwin environment.
+  In order to run on Cygwin, CMake needs to be specially compiled.
+  Please select either CMake bundled with CLion or CMake from the Cygwin installation.
+  ------------------------------------------------------------------------------------
+
+Cannot get compiler information:
+	Compiler exited with error code 1: C:\Program Files\JetBrains\CLion 2021.3.4\bin\mingw\bin\g++.exe -xc++ -isystemC:/opencv/build/x86/mingw/install/include -fpch-preprocess -v -dD -E
+	
+	

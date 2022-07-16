@@ -17,21 +17,9 @@ using namespace cv::dnn;
 
 int main(int argc, char** argv)
 {
-	// Load class list.
-	vector<string> class_list;
-	ifstream ifs("hands_labels.names");
-	string line;
 
-
-	while (getline(ifs, line))
-	{
-	class_list.push_back(line);
-	}
-	
-	// Load model: read net
-	Net net;
-	net = readNet("aug_model.onnx");
-	
+    string class_list_path = "hands_labels.names";
+    string net_path = "aug_model.onnx";
 
 
     // Load image.
@@ -44,33 +32,14 @@ int main(int argc, char** argv)
         return -1;
     }
 
-    Detection det = Detection();
+    Detection det = Detection(class_list_path, net_path);
+    det.make_detection(frame, argv[2]);
 
-    vector<Mat> detections;
-    detections = det.pre_process(frame, net);
-
-
-    // read ground truth
-    vector<array<int, 4>> gr_boxes_vec;
-    det.read_bb_file(argv[2], gr_boxes_vec);
-
-    string IoU;
-    Mat img = det.post_process(frame, detections, class_list , gr_boxes_vec, IoU);
-
-    // Put efficiency information.
-    // The function getPerfProfile returns the overall time for inference(t) and the timings for each of the 	 layers(in layersTimes)
-
-    vector<double> layersTimes;
-    double freq = getTickFrequency() / 1000;
-    double t = net.getPerfProfile(layersTimes) / freq;
-    string inference_time = format("Inference time : %.2f ms", t);
-    //putText(img, label, Point(20, 40), FONT_FACE, FONT_SCALE, RED);
-    cout << inference_time << endl;
-
-    imshow("Output", img);
+    // -- show output
+    imshow("Output", frame);
     waitKey(0);
 
-    imwrite("img.jpg", img);
+    imwrite("img.jpg", frame);
 
 	return 0;
 }
