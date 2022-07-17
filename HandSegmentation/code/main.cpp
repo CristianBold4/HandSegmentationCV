@@ -11,10 +11,10 @@ int main(int argc, char** argv) {
 	Segmentation seg = Segmentation();
 	string bb_path, rgb_path, mask_path;
 	vector<int> test_indeces = {   1,2,3,4,5,6,7,8,9,10, 11,12,13,14,15,16,17,18,19,20 };
-	//vector<int> test_indeces = { 17 };	//use this vector to choose images from test dataset
+	//vector<int> test_indeces = { 16,17,18,19,20 };	//use this vector to choose images from test dataset
 	
 	int test_num = 2;
-	string method = "Grabcut, 2 iteration, changed diff cmpt";
+	string method = "Grabcut, 2 iteration, net detection,wide bb";
 	string out_name = "segmentation_results_v" + to_string(test_num) + ".txt";
 	ofstream out_file(out_name);
 	out_file << "SEGMENTATION RESULTS\nMethod used: " << method << ";\ntest num. " << test_num<< "\n\n";
@@ -49,7 +49,7 @@ int main(int argc, char** argv) {
 	
 		Mat src_bb;
 		seg.read_bb_file_label(src.rows, src.cols, bb_path, boxes_vec, class_labels);
-		//seg.draw_box_image_label(src, src_bb, boxes_vec, class_labels, true);
+		seg.draw_box_image_label(src, src_bb, boxes_vec, class_labels, true);
 		//seg.show_image(src_bb, to_string(test_image_num) + ")src_bb");
 	
 		//boxes_vec = seg.get_wide_cordinates(src.rows, src.cols, boxes_vec);
@@ -73,17 +73,17 @@ int main(int argc, char** argv) {
 	
 
 		vector<Mat> treshold_bb_vec;
-		seg.treshold_difference(difference_bb_vec, treshold_bb_vec, boxes_vec);
+		seg.treshold_difference(difference_bb_vec, treshold_bb_vec);
 		//seg.show_image(tres_diff, to_string(test_indeces[k]) + ") difference tresholded");
 		
-		seg.draw_segmentation_GB_mask(src, gb_th, tres_diff, treshold_bb_vec, boxes_vec, class_labels);
+		seg.segmentation_GB_mask(src, gb_th, tres_diff, treshold_bb_vec, boxes_vec, class_labels);
 		//seg.show_image(gb_th,to_string(test_indeces[k]) +") GB mask");
 		//seg.show_image(tres_diff, to_string(test_indeces[k]) + ") bin mask");
 
-		//seg.draw_segmentation_Km(src, gb_th, tres_diff, boxes_vec, class_labels);
+		//seg.segmentation_Km(src, gb_th, tres_diff, boxes_vec, class_labels);
 
 		seg.apply_mask(src, gb_th, gb_th, false);
-		seg.show_image(gb_th, to_string(test_indeces[k]) +") GB-mask segmentation");
+		seg.show_image(gb_th, to_string(test_indeces[k]) + ") GB-mask segmentation"); 
 
 		cvtColor(gt_mask, gt_mask, COLOR_BGR2GRAY);
 		
@@ -96,7 +96,7 @@ int main(int argc, char** argv) {
 		cout << "Img " << to_string(test_image_num) << ")	" << "PA: " << pixel_accuracy << arrow << ";	IOU: " << IOU <<  " \n";
 		out_file << "Img " << to_string(test_image_num) << ")	" << "PA: " << pixel_accuracy << arrow << ";	IOU: " << IOU << " \n";
 
-		seg.draw_box_image_label(gb_th, gb_th, boxes_vec,class_labels,false);
+		//seg.draw_box_image_label(gb_th, gb_th, boxes_vec,class_labels,false);
 		//seg.show_image(gb_th, to_string(test_indeces[k]) + ") GB-mask segmentation+bb");
 			
 	}

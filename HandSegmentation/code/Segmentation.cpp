@@ -25,70 +25,12 @@ bool Segmentation::valid_bb_cordinates(int src_r, int src_c, std::vector<std::ar
 		int w = bb_vector[k][2];
 		int h = bb_vector[k][3];
 
-		if (x < 0 || y < 0 || w < 0 || h < 0) return false;
-		if (x > src_c || y>src_r || (x + w)>src_c || (y + h) > src_r) return false;
+		if (x < 0 || y < 0 || w < 0 || h < 0) { cout << "bb: "<<k<<" negative cordinate\n";  return false; }
+		if (x > src_c || y > src_r || (x + w) > src_c || (y + h) > src_r) { /*cout << "bb: " << k << " out of image\n";*/ return false; }
 	}
 	return true;
 }
 
-//DA VERIFICARE SE TENERE
-void Segmentation::show_image(Mat to_show, string window_name)
-{
-	namedWindow(window_name, WINDOW_AUTOSIZE);
-	imshow(window_name, to_show);
-	waitKey(0);
-}
-
-//DA VERIFICARE SE TENERE
-/* @brief read the data inside a bounding box txt file and copy them into the given vector.
-* This method parses a txt file that should contains the data to identify each bounding box inside an image.
-* The cordinates are expressed as : [ (top-lef corner x cordinate), (top-lef corner y cordinate), (width), (heigth) ]
-
-@param path of the txt file that contains the bounding boxes cordinates.
-@param bb_vector a vector of array, each array containing the cordinates of a single bounding boxe.
-**/
-void Segmentation::read_bb_file(int src_r, int src_c, string path, vector<array<int, 4>>& bb_vector)
-{
-	String line;
-	vector<String> line_vec;
-	vector<array<int, 4>> boxes;
-	ifstream bb_file(path);
-
-	while (getline(bb_file, line)) {
-
-		//cout << line << "\n";
-		line_vec.push_back(line);
-	}
-	for (int i = 0; i < line_vec.size(); i++) {
-		String parsed, iline;
-		iline = line_vec[i];
-		stringstream stringstream(iline);
-		int cordinate_counter = 0;
-		array<int, 4> cordinates;
-		while (getline(stringstream, parsed, '	')) {
-
-			if (cordinate_counter == 4) {
-				cout << "unable to read bounding box file: more that 4 cordinates";
-				exit(1);
-			}
-
-			int c = stoi(parsed);
-			//cout << i << " : " << c << "\n";
-			cordinates[cordinate_counter] = c;
-			cordinate_counter++;
-		}
-		if (cordinate_counter < 4) {
-			cout << "unable to read bounding box file: less that 4 cordinates " << cordinate_counter;
-			exit(1);
-		}
-		boxes.push_back(cordinates);
-	}
-	if (!valid_bb_cordinates(src_r, src_c, boxes)) {
-		cout << "the cordinates provided are not consistent with src size";
-		exit(1);
-	}
-	bb_vector = boxes;
-}
 
 /* @brief Read the txt file that contains the data relative to the bounding boxes and store them into the given vectors.
 * method that parse the txt file that contains the bounding boxes cordinates, sizes and associated class labels. 
@@ -113,22 +55,24 @@ void Segmentation::read_bb_file_label(int src_r, int src_c, string path, vector<
 	vector<int> labels;
 	ifstream bb_file(path);
 
+	//read each line of the txt file
 	while (getline(bb_file, line)) {
-
 		//cout << line << "\n";
 		line_vec.push_back(line);
 	}
+
+	//read each number inside a line and save it in a specific container
+	//if the file is not structured correctly, give an error message and stop execution
 	for (int i = 0; i < line_vec.size(); i++) {
 		String parsed, iline;
 		iline = line_vec[i];
 		stringstream stringstream(iline);
 		int cordinate_counter = 0;
 		array<int, 4> cordinates;
-		while (getline(stringstream, parsed, '	')) {
 
+		while (getline(stringstream, parsed,'	')) {
 			int c = stoi(parsed);
-			//cout << i << " : " << c << "\n";
-			if (cordinate_counter < 4) { cordinates[cordinate_counter] = c; }
+			if (cordinate_counter < 4) { cordinates[cordinate_counter] = c; /*cout << cordinate_counter << " : " << c << "\n";*/	}
 			else if (cordinate_counter == 4) { labels.push_back(c); }
 			else 
 			{
@@ -145,6 +89,8 @@ void Segmentation::read_bb_file_label(int src_r, int src_c, string path, vector<
 		boxes.push_back(cordinates);
 		
 	}
+
+	//check if the extracted data are valid; if not give an error message and stop execution
 	if (!valid_bb_cordinates(src_r, src_c, boxes)) {
 		cout << "the cordinates provided are not consistent with src size";
 		exit(1);
@@ -175,9 +121,11 @@ std::vector<std::array<int, 4>> Segmentation::get_wide_cordinates(int src_r, int
 		int y = bb_vector[k][1];
 		int w = bb_vector[k][2];
 		int h = bb_vector[k][3];
-
+		
+		//compute wide cordinates
 		array<int, 4> wide_bb = { x - delta, y - delta, w + delta*2, h + delta*2 };
 		vector<std::array<int, 4>> check_vec = { wide_bb };
+		//if wide cordinates are valid use them; otherwise use original cordinates
 		if (valid_bb_cordinates(src_r, src_c, check_vec)) {	wide_bb_vector.push_back(wide_bb); }
 		else { wide_bb_vector.push_back(bb_vector[k]); }
 	}
@@ -185,27 +133,8 @@ std::vector<std::array<int, 4>> Segmentation::get_wide_cordinates(int src_r, int
 }
 
 
-//DA VERIFICARE SE TENERE
-/*@brief Draws the specified bounding boxes into the provided image
-method that draw the specified bounding boxes into the image provided by src and save the result into dst
 
-@param src input image
-@param dst output image
-@param bound_boxes vector of arrays containing the cordinates of the bounding boxes
 
-**/
-void Segmentation::draw_box_image(cv::Mat src, cv::Mat& dst, vector<array<int, 4>> bound_boxes)
-{
-	dst = src.clone();
-
-	for (int k = 0; k < bound_boxes.size(); k++) {
-		int x = bound_boxes[k][0];
-		int y = bound_boxes[k][1];
-		int w = bound_boxes[k][2];
-		int h = bound_boxes[k][3];
-		rectangle(dst, Point(x, y), Point(x + w, y + h), colors[k] * 0.6, 1, 1);
-	}
-}
 
 /*@brief Draws the specified bounding boxes into the provided image, with colors based on labels.
 * This method draws the bounding boxes specified in bb_vector into the image provided by src and save the result into dst. 
@@ -244,8 +173,10 @@ void Segmentation::draw_box_image_label(cv::Mat src, cv::Mat& dst, std::vector<s
 
 
 //DA VERIFICARE SE TENERE
-/*
-method that draw the specified mask (in purple) into the image provided by src and save the result into dst
+/*@Brief draws the specified mask into the source image
+This method draws the specified mask into the image provided by src and save the result into dst.
+The provided mask is superimposed on the src image with a certain level of trasparency.
+If the mask has only 
 
 @param src input image
 @param dst output image
@@ -261,9 +192,7 @@ void Segmentation::apply_mask(cv::Mat src, cv::Mat& dst, cv::Mat mask, bool same
 		for (int i = 0; i < mask.rows; i++) {
 			for (int j = 0; j < mask.cols; j++) {
 				Vec3b color = mask_copy.at<Vec3b>(i, j);
-				if (color[0] != 0 || color[1] != 0 || color[2] != 0) {
-					mask_copy.at<Vec3b>(i, j) = colors[0];
-				}
+				if (color[0] != 0 || color[1] != 0 || color[2] != 0) {mask_copy.at<Vec3b>(i, j) = colors[0];	}
 			}
 		}
 	}
@@ -273,7 +202,6 @@ void Segmentation::apply_mask(cv::Mat src, cv::Mat& dst, cv::Mat mask, bool same
 
 
 /* @brief Method that performs hand segmentation on the provided image, exploiting K-means clustering.
-
 * This method consider separately the portion of the src image insigth each of the specified bounding boxes. Then it performs binary segmentation on such portion, using K-means.
 * The K-means algorithm is performed in a vector space where each vector is associated to a single pixel and it contains: 
 * - the Cb channel value of the pixel;
@@ -292,9 +220,8 @@ void Segmentation::apply_mask(cv::Mat src, cv::Mat& dst, cv::Mat mask, bool same
 @param bb_vector vector of arrays containing the cordinates of the bounding boxes.
 @param class_labels a vector of int, each element containing the label associated with the corrisponding bounding box in bb_vector.
 
-
 **/
-void Segmentation::draw_segmentation_Km(cv::Mat src, cv::Mat& col_mask, cv::Mat& bin_mask, vector<array<int, 4>> bb_vector, std::vector<int> class_labels)
+void Segmentation::segmentation_Km(cv::Mat src, cv::Mat& col_mask, cv::Mat& bin_mask, vector<array<int, 4>> bb_vector, std::vector<int> class_labels)
 {
 	Mat gaus_blurred, src_ycc, labels;
 	col_mask = Mat::zeros(src.rows, src.cols, CV_8UC3);
@@ -366,7 +293,7 @@ void Segmentation::draw_segmentation_Km(cv::Mat src, cv::Mat& col_mask, cv::Mat&
 @param class_labels a vector of int, each element containing the label associated with the corrisponding bounding box in bb_vector.
 
 **/
-void Segmentation::draw_segmentation_GB(cv::Mat src, cv::Mat& col_mask, cv::Mat& bin_mask, vector<array<int, 4>> bb_vector, std::vector<int> class_labels)
+void Segmentation::segmentation_GB(cv::Mat src, cv::Mat& col_mask, cv::Mat& bin_mask, vector<array<int, 4>> bb_vector, std::vector<int> class_labels)
 {
 	Mat src_ycc;
 	cvtColor(src, src_ycc, COLOR_BGR2YCrCb, 0);
@@ -415,7 +342,7 @@ void Segmentation::draw_segmentation_GB(cv::Mat src, cv::Mat& col_mask, cv::Mat&
 @param bound_boxes vector of arrays containing the cordinates of the bounding boxes.
 @param class_labels a vector of int, each element containing the label associated with the corrisponding bounding box in bb_vector.
 **/
-void Segmentation::draw_segmentation_GB_mask(cv::Mat src, cv::Mat& col_mask, cv::Mat& mask, std::vector<cv::Mat>& mask_vec, std::vector<std::array<int, 4>> bound_boxes, std::vector<int> class_labels)
+void Segmentation::segmentation_GB_mask(cv::Mat src, cv::Mat& col_mask, cv::Mat& mask, std::vector<cv::Mat>& mask_vec, std::vector<std::array<int, 4>> bound_boxes, std::vector<int> class_labels)
 {
 	Mat src_ycc;
 	Mat out_mask = Mat::zeros(src.rows, src.cols, CV_8UC1);
@@ -534,10 +461,10 @@ void Segmentation::difference_from_center_hand(cv::Mat src, cv::Mat& dst, std::v
 
 /* @brief Compute difference image from estimated skin color for each bounding box, exploiting classification data.
 
-For each specified bounding box this method computes the color difference image between the pixels of the src image that are inside that box
-and the value of the skin color of the hand contained in the box.
-The skin color is computed by considering the average color value between the central pixel of each bounding box and a second pixel 
-collocated in a specific position that depends on the label associated with the bounding box. 
+* For each specified bounding box this method computes the color difference image between the pixels of the src image that are inside that box
+* and the value of the skin color of the hand contained in the box.
+* The skin color is computed by considering the average color value between the central pixel of each bounding box and a second pixel 
+* collocated in a specific position that depends on the label associated with the bounding box. 
 
 @param src input image
 @param difference_bb_vec vector that, after the call, stores the difference images computed for each bounding box.
@@ -571,18 +498,15 @@ void Segmentation::difference_from_center_hand_label(cv::Mat src, std::vector<Ma
 
 		//compute average value
 		Vec3b skin_color;
-		
 		for (int i = 0; i < 3; i++) skin_color[i] = (center_val[i] + decenter_val[i]) / 2;
 		
+		//compute difference from average value for each pixel inside the bounding box
 		Mat difference_bb(h, w, CV_8U);
 		for (int i = 0; i < roi.rows; i++) {
 			for (int j = 0; j < roi.cols; j++) {
-
 				float cvd[2];
 				cvd[0] = abs(skin_color[1] - roi.at<Vec3b>(i, j)[1]);
 				cvd[1] = abs(skin_color[2] - roi.at<Vec3b>(i, j)[2]);
-				//cvd[2] = abs(decenter_val[1] - roi.at<Vec3b>(i, j)[1]);
-				//cvd[3] = abs(decenter_val[2] - roi.at<Vec3b>(i, j)[2]);
 				difference_bb.at<unsigned char>(i, j) = (cvd[0] + cvd[1] ) / 2;
 			}
 		}
@@ -595,122 +519,33 @@ void Segmentation::difference_from_center_hand_label(cv::Mat src, std::vector<Ma
 
 
 
+/* @brief Apply a threshold to a set of difference image.
+* This method apply a threshold on each grayscale image contained into difference_bb_vec and save the binary image obtained into the corresponding position of threshold_bb_vec.
+* The threshold value is computed separately for each difference image, exploiting the OTSU method.
 
 
-/*
-method that compute the difference between each pixel of the src image and the approssimated value of the skin color and saves it into the dst image.
-The skin color is computed by considering the average color of the central pixel value of each bounding box.
 
-@param src input image
-@param dst output image
+@param difference_bb_vec vector that stores the difference images to be thresholded
+@param threshold_bb_vec vector that, after the call, stores the images obtained after the treshold of each difference image
 @param bound_boxes vector of arrays containing the cordinates of the bounding boxes
 
 **/
-void Segmentation::difference_from_center(cv::Mat src, cv::Mat& dst, vector<array<int, 4>> bound_boxes)
+void Segmentation::treshold_difference(std::vector<cv::Mat>& difference_bb_vec, std::vector<cv::Mat>& threshold_bb_vec)
 {
-	Mat averaged, difference, src_ycc;
-	difference = Mat(src.rows, src.cols, CV_8U);
-	//difference = src.clone();
-	blur(src, averaged, Size(21,21));
-	cvtColor(src, src_ycc, COLOR_BGR2YCrCb, 0);
-	cvtColor(averaged, averaged, COLOR_BGR2YCrCb, 0);
-
-	vector <Vec3b> center_value;
-	array <float, 3> channel_sum = { 0.0,0.0,0.0 };
-	Vec3b center_value_mean;
-
-	for (int k = 0; k < bound_boxes.size(); k++) {
-
-		int x = bound_boxes[k][0];
-		int y = bound_boxes[k][1];
-		int w = bound_boxes[k][2];
-		int h = bound_boxes[k][3];
-
-		Mat roi(averaged(Rect(x, y, w, h)));
-		center_value.push_back(roi.at<Vec3b>(h / 2, w / 2));
-	}
-
-	for (int k = 0; k < bound_boxes.size(); k++) {
-		channel_sum[0] += center_value[k][0];
-		channel_sum[1] += center_value[k][1];
-		channel_sum[2] += center_value[k][2];
-	}
-	center_value_mean[0] = uchar(channel_sum[0] / bound_boxes.size());
-	center_value_mean[1] = uchar(channel_sum[1] / bound_boxes.size());
-	center_value_mean[2] = uchar(channel_sum[2] / bound_boxes.size());
-
-	for (int i = 0; i < src.rows; i++) {
-		for (int j = 0; j < src.cols; j++) {
-			/*
-			difference.at<Vec3b>(i, j)[0] = 50; // abs(center_value_mean[0] - src_ycc.at<Vec3b>(i, j)[0]);
-			difference.at<Vec3b>(i, j)[1] = abs(center_value_mean[1] - src_ycc.at<Vec3b>(i, j)[1]);
-			difference.at<Vec3b>(i, j)[2] = abs(center_value_mean[2] - src_ycc.at<Vec3b>(i, j)[2]);
-			*/
-			//
-			float cvm[2];
-			cvm[0] = abs(center_value_mean[1] - src_ycc.at<Vec3b>(i, j)[1]) ;
-			cvm[1] = abs(center_value_mean[2] - src_ycc.at<Vec3b>(i, j)[2]) ;
-			difference.at<unsigned char>(i, j) = (cvm[0] + cvm[1])/2;
-		}
-	}
-	
-	//cvtColor(difference, difference, COLOR_YCrCb2BGR, 0);
-	//cvtColor(difference, difference, COLOR_BGR2GRAY, 0);
-	//intensity_transform::logTransform(difference, difference);
-	GaussianBlur(difference, difference, Size(11,11), 0);
-	dst = difference;
-}
-
-
-/*
-method that perform a treshold of a given image considering only the specified boxes. 
-The treshold is performed separately inside each boxes, exploiting the OTSU method.
-
-@param difference input image
-@param dst output image
-@param difference_bb_vec vector that stores the difference images to be thresholded for each bounding box
-@param treshold_bb_vec vector that, after the call, stores the images obtained after the treshold of each bounding box difference image
-@param bound_boxes vector of arrays containing the cordinates of the bounding boxes
-
-**/
-void Segmentation::treshold_difference(std::vector<cv::Mat>& difference_bb_vec, std::vector<cv::Mat>& treshold_bb_vec, std::vector<std::array<int, 4>> bound_boxes)
-{
-
-	for (int k = 0; k < bound_boxes.size(); k++) {
-
-		int x = bound_boxes[k][0];
-		int y = bound_boxes[k][1];
-		int w = bound_boxes[k][2];
-		int h = bound_boxes[k][3];
-
-		
+	for (int k = 0; k < difference_bb_vec.size(); k++) {
 		Mat roi = difference_bb_vec[k].clone();
-
 		Mat thresholded_roi;
-	//	double minVal, maxVal;
-
-		//minMaxIdx(roi, &minVal, &maxVal);
-
-		//two alternatives
-		//threshold(roi, thresholded_roi, minVal*1.4, 255, THRESH_BINARY_INV);
 		threshold(roi, thresholded_roi, 1, 255, THRESH_BINARY_INV + THRESH_OTSU);
-
-		treshold_bb_vec.push_back(thresholded_roi);
-	}
-
-	for (int k = 0; k < bound_boxes.size(); k++) {
-		//dst(Rect(bound_boxes[k][0], bound_boxes[k][1], bound_boxes[k][2], bound_boxes[k][3])) = thresholded_boxes[k];
-		//thresholded_boxes[k].copyTo(dst(Rect(bound_boxes[k][0], bound_boxes[k][1], bound_boxes[k][2], bound_boxes[k][3])));
-		//show_image(treshold_bb_vec[k], to_string(k));
+		threshold_bb_vec.push_back(thresholded_roi);
 	}
 }
 
 
-/*
-method that evaluate a segmentation using the pixel accuracy metric. 
+/*  @brief evaluates a segmentation using the pixel accuracy metric. 
+This method evaluates the specified segmentation mask using the pixel accuracy metric. 
 
 @param mask segmentation mask that needs to be evaulated
-@param ground_th ground truth of the segmentation
+@param ground_th ground truth mask for the segmentation
 
 **/
 float Segmentation::compute_pixel_accuracy(cv::Mat mask, cv::Mat ground_th)
@@ -725,11 +560,12 @@ float Segmentation::compute_pixel_accuracy(cv::Mat mask, cv::Mat ground_th)
 	return accuracy;
 }
 
-/*
-method that evaluate a segmentation using the Intersection Over Union metric.
+
+/*  @brief evaluates a segmentation using the Intersection Over Union metric.
+This method evaluates the specified segmentation mask using the Intersection Over Union metric..
 
 @param mask segmentation mask that needs to be evaulated
-@param ground_th ground truth of the segmentation
+@param ground_th ground truth mask for the segmentation
 
 **/
 float Segmentation::compute_IOU(cv::Mat mask, cv::Mat ground_th)
@@ -758,6 +594,21 @@ float Segmentation::compute_IOU(cv::Mat mask, cv::Mat ground_th)
 	return IOU;
 }
 
+//DA VERIFICARE SE TENERE
+
+void Segmentation::show_image(Mat to_show, string window_name)
+{
+	namedWindow(window_name, WINDOW_AUTOSIZE);
+	imshow(window_name, to_show);
+	waitKey(0);
+}
+
+
+
+
+
+
+//DA VERIFICARE SE TENERE
 /*
 void Segmentation::get_superpixel_image(cv::Mat src, cv::Mat& dst)
 {
@@ -804,8 +655,149 @@ void Segmentation::get_superpixel_image(cv::Mat src, cv::Mat& dst)
 
 
 
+//DA VERIFICARE SE TENERE
+/*@brief Draws the specified bounding boxes into the provided image
+method that draw the specified bounding boxes into the image provided by src and save the result into dst
+
+@param src input image
+@param dst output image
+@param bound_boxes vector of arrays containing the cordinates of the bounding boxes
+
+**/
+/*
+void Segmentation::draw_box_image(cv::Mat src, cv::Mat& dst, vector<array<int, 4>> bound_boxes)
+{
+	dst = src.clone();
+
+	for (int k = 0; k < bound_boxes.size(); k++) {
+		int x = bound_boxes[k][0];
+		int y = bound_boxes[k][1];
+		int w = bound_boxes[k][2];
+		int h = bound_boxes[k][3];
+		rectangle(dst, Point(x, y), Point(x + w, y + h), colors[k] * 0.6, 1, 1);
+	}
+}*/
 
 
+
+
+//DA VERIFICARE SE TENERE
+/* @brief read the data inside a bounding box txt file and copy them into the given vector.
+* This method parses a txt file that should contains the data to identify each bounding box inside an image.
+* The cordinates are expressed as : [ (top-lef corner x cordinate), (top-lef corner y cordinate), (width), (heigth) ]
+
+@param path of the txt file that contains the bounding boxes cordinates.
+@param bb_vector a vector of array, each array containing the cordinates of a single bounding boxe.
+**/
+/*
+void Segmentation::read_bb_file(int src_r, int src_c, string path, vector<array<int, 4>>& bb_vector)
+{
+	String line;
+	vector<String> line_vec;
+	vector<array<int, 4>> boxes;
+	ifstream bb_file(path);
+
+	while (getline(bb_file, line)) {
+
+		//cout << line << "\n";
+		line_vec.push_back(line);
+	}
+	for (int i = 0; i < line_vec.size(); i++) {
+		String parsed, iline;
+		iline = line_vec[i];
+		stringstream stringstream(iline);
+		int cordinate_counter = 0;
+		array<int, 4> cordinates;
+		while (getline(stringstream, parsed, '	')) {
+
+			if (cordinate_counter == 4) {
+				cout << "unable to read bounding box file: more that 4 cordinates";
+				exit(1);
+			}
+
+			int c = stoi(parsed);
+			//cout << i << " : " << c << "\n";
+			cordinates[cordinate_counter] = c;
+			cordinate_counter++;
+		}
+		if (cordinate_counter < 4) {
+			cout << "unable to read bounding box file: less that 4 cordinates " << cordinate_counter;
+			exit(1);
+		}
+		boxes.push_back(cordinates);
+	}
+	if (!valid_bb_cordinates(src_r, src_c, boxes)) {
+		cout << "the cordinates provided are not consistent with src size";
+		exit(1);
+	}
+	bb_vector = boxes;
+}*/
+
+//DA VERIFICARE SE TENERE
+/*
+method that compute the difference between each pixel of the src image and the approssimated value of the skin color and saves it into the dst image.
+The skin color is computed by considering the average color of the central pixel value of each bounding box.
+
+@param src input image
+@param dst output image
+@param bound_boxes vector of arrays containing the cordinates of the bounding boxes
+
+**/
+/*
+void Segmentation::difference_from_center(cv::Mat src, cv::Mat& dst, vector<array<int, 4>> bound_boxes)
+{
+	Mat averaged, difference, src_ycc;
+	difference = Mat(src.rows, src.cols, CV_8U);
+	//difference = src.clone();
+	blur(src, averaged, Size(21,21));
+	cvtColor(src, src_ycc, COLOR_BGR2YCrCb, 0);
+	cvtColor(averaged, averaged, COLOR_BGR2YCrCb, 0);
+
+	vector <Vec3b> center_value;
+	array <float, 3> channel_sum = { 0.0,0.0,0.0 };
+	Vec3b center_value_mean;
+
+	for (int k = 0; k < bound_boxes.size(); k++) {
+
+		int x = bound_boxes[k][0];
+		int y = bound_boxes[k][1];
+		int w = bound_boxes[k][2];
+		int h = bound_boxes[k][3];
+
+		Mat roi(averaged(Rect(x, y, w, h)));
+		center_value.push_back(roi.at<Vec3b>(h / 2, w / 2));
+	}
+
+	for (int k = 0; k < bound_boxes.size(); k++) {
+		channel_sum[0] += center_value[k][0];
+		channel_sum[1] += center_value[k][1];
+		channel_sum[2] += center_value[k][2];
+	}
+	center_value_mean[0] = uchar(channel_sum[0] / bound_boxes.size());
+	center_value_mean[1] = uchar(channel_sum[1] / bound_boxes.size());
+	center_value_mean[2] = uchar(channel_sum[2] / bound_boxes.size());
+
+	for (int i = 0; i < src.rows; i++) {
+		for (int j = 0; j < src.cols; j++) {
+
+			difference.at<Vec3b>(i, j)[0] = 50; // abs(center_value_mean[0] - src_ycc.at<Vec3b>(i, j)[0]);
+			difference.at<Vec3b>(i, j)[1] = abs(center_value_mean[1] - src_ycc.at<Vec3b>(i, j)[1]);
+			difference.at<Vec3b>(i, j)[2] = abs(center_value_mean[2] - src_ycc.at<Vec3b>(i, j)[2]);
+
+			//
+			float cvm[2];
+			cvm[0] = abs(center_value_mean[1] - src_ycc.at<Vec3b>(i, j)[1]) ;
+			cvm[1] = abs(center_value_mean[2] - src_ycc.at<Vec3b>(i, j)[2]) ;
+			difference.at<unsigned char>(i, j) = (cvm[0] + cvm[1])/2;
+		}
+	}
+
+	//cvtColor(difference, difference, COLOR_YCrCb2BGR, 0);
+	//cvtColor(difference, difference, COLOR_BGR2GRAY, 0);
+	//intensity_transform::logTransform(difference, difference);
+	GaussianBlur(difference, difference, Size(11,11), 0);
+	dst = difference;
+}*/
 
 
 
