@@ -4,13 +4,17 @@
 
 #include "../header/Detection.h"
 
-
-
-// Namespaces.
+// Namespaces
 using namespace cv;
 using namespace std;
 using namespace cv::dnn;
 
+
+/**
+ * Constructor of Detection class
+ * @param class_list_path, path of the class id-name map
+ * @param net_path, path of the trained netowrk
+ */
 Detection::Detection(const std::string &class_list_path, const std::string &net_path) {
     // Load class list.
     ifstream ifs(class_list_path);
@@ -26,6 +30,197 @@ Detection::Detection(const std::string &class_list_path, const std::string &net_
 
 }
 
+/**
+ * Method to draw labels
+ * @param input_image
+ * @param label
+ * @param left
+ * @param top
+ */
+void Detection::draw_label(Mat &input_image, string label, int left, int top) {
+	// Display the label at the top of the bounding box.
+	int baseLine;
+	Size label_size = getTextSize(label, FONT_FACE, FONT_SCALE, THICKNESS, &baseLine);
+	top = max(top, label_size.height);
+	// Top left corner.
+	Point tlc = Point(left, top);
+	// Bottom right corner.
+	Point brc = Point(left + label_size.width, top + label_size.height + baseLine);
+	// Draw black rectangle.
+	rectangle(input_image, tlc, brc, BLACK, FILLED);
+	// Put the label on the black rectangle.
+	putText(input_image, label, Point(left, top + label_size.height), FONT_FACE, FONT_SCALE, YELLOW, THICKNESS);
+}
+
+vector<Mat> Detection::pre_process(Mat &input_image) {
+	// Convert to blob.
+	Mat blob;
+	blobFromImage(input_image, blob, 1. / 255., Size(INPUT_WIDTH, INPUT_HEIGHT), Scalar(), true, false);
+
+	net.setInput(blob);
+
+	// Forward propagate.
+	vector<Mat> outputs;
+	net.forward(outputs, net.getUnconnectedOutLayersNames());
+
+	return outputs;
+}
+
+
+
+void Detection::write_output(array<int, 4> ordered_bb[4]) {
+
+    ofstream outfile("./output/out.txt");
+
+    // write ordered output
+    for (int i = 0; i < 4; i++) {
+        //write the output with class id
+        if (ordered_bb[i][0] != -1) {
+            outfile << ordered_bb[i][0] << " " << ordered_bb[i][1] << " " << ordered_bb[i][2] << " " << ordered_bb[i][3]
+                    << " " << i << " " << "\n";
+        }
+
+    }
+
+    outfile.close();
+}
+
+
+void Detection::post_process(Mat &input_image, vector<Mat> &outputs, const vector<string> &class_name, array<int, 4> ordered_bb[4]) {
+
+    // Initialize vectors to hold respective outputs while unwrapping detections.
+    vector<int> class_ids;
+    vector<float> confidences;
+    vector<Rect> boxes;
+
+    // Resizing factor.
+    float x_factor = input_image.cols / INPUT_WIDTH;
+    float y_factor = input_image.rows / INPUT_HEIGHT;
+
+    float *data = (float *) outputs[0].data;
+
+    // Network output dimensions
+    const int dimensions = 9;
+    const int rows = 25200;
+
+    // Iterate through 25200 detections.
+    for (int i = 0; i < rows; ++i) {
+        float confidence = data[4];
+        // Discard bad detections and continue.
+        if (confidence >= CONFIDENCE_THRESHOLD) {
+            float *classes_scores = data + 5;
+            // Create a 1x85 Mat and store class scores of 80 classes.
+            Mat scores(1, class_name.size(), CV_32FC1, classes_scores);
+            // Perform minMaxLoc and acquire index of best class score.
+            Point class_id;
+            double max_class_score;
+            minMaxLoc(scores, 0, &max_class_score, 0, &class_id);
+            // Continue if the class score is above the threshold.
+            if (max_class_score > SCORE_THRESHOLD) {
+                // Store class ID and confidence in the pre-defined respective vectors.
+
+                confidences.push_back(confidence);
+                class_ids.push_back(class_id.x);
+
+                // Center.
+                float cx = data[0];
+                float cy = data[1];
+                // Box dimension.
+                float w = data[2];
+                float h = data[3];
+                // Bounding box coordinates.
+                int left = int((cx - 0.5 * w) * x_factor);
+                int top = int((cy - 0.5 * h) * y_factor);
+                int width = int(w * x_factor);
+                int height = int(h * y_factor);
+                // Store good detections in the boxes vector.
+                boxes.push_back(Rect(left, top, width, height));
+            }
+
+        }
+        // Jump to the next column.
+        data += 9;
+    }
+
+    // Perform Non-Maximum Suppression and draw predictions.
+    vector<int> indices;
+    NMSBoxes(boxes, confidences, SCORE_THRESHOLD, NMS_THRESHOLD, indices);
+
+
+    // init array
+    for (int i = 0; i < 4; i++) {
+        ordered_bb[i][0] = -1;
+    }
+
+
+    // -- compute bounding box coordinates
+    for (int i = 0; i < indices.size(); i++) {
+        int idx = indices[i];
+        Rect box = boxes[idx];
+
+        int left = box.x;
+        int top = box.y;
+        int width = box.width;
+        int height = box.height;
+
+        // Get the label for the class name and its confidence.
+        string label = format("%.2f", confidences[idx]);
+        label = class_name[class_ids[idx]] + ":" + label;
+
+        //cout << class_ids[idx] << " " << class_name[class_ids[idx]] << endl;
+
+        int id = class_ids[idx];
+        ordered_bb[id][0] = left;
+        ordered_bb[id][1] = top;
+        ordered_bb[id][2] = width;
+        ordered_bb[id][3] = height;
+
+
+        // -- Draw bounding box.
+        rectangle(input_image, Point(left, top), Point(left + width, top + height), LABELS_COLORS[class_ids[idx]],
+                  THICKNESS);
+
+        // -- Draw class labels.
+        draw_label(input_image, label, left, top);
+
+    }
+
+}
+
+void Detection::make_detection(cv::Mat &frame) {
+
+    vector<Mat> detections;
+    detections = pre_process(frame);
+
+    array<int, 4> ordered_bb [4];
+    post_process(frame, detections, class_list, ordered_bb);
+
+    // -- Put efficiency information.
+    // -- The function getPerfProfile returns the overall time for inference(t) and the timings for each of the layers(in layersTimes)
+
+    vector<double> layersTimes;
+    double freq = getTickFrequency() / 1000;
+    double t = net.getPerfProfile(layersTimes) / freq;
+    string inference_time = format("Inference time : %.2f ms", t);
+    //putText(img, label, Point(20, 40), FONT_FACE, FONT_SCALE, RED);
+    cout << inference_time << endl;
+
+    // -- write the output
+    write_output(ordered_bb);
+
+}
+
+
+
+/**
+ * ------ TEST METHODS ------
+ **/
+
+/**
+ * Method to read bounding boxes from file
+ * @param path,path of the bounding boxes file .txt
+ * @param bb_vector, vector of bounding boxes
+ */
 void Detection::read_bb_file(const string &path, vector<array<int, 4>> &bb_vector) {
     String line;
     vector<String> line_vec;
@@ -62,36 +257,6 @@ void Detection::read_bb_file(const string &path, vector<array<int, 4>> &bb_vecto
     }
 
     bb_vector = boxes;
-}
-
-// Draw the predicted bounding box.
-void Detection::draw_label(Mat &input_image, string label, int left, int top) {
-	// Display the label at the top of the bounding box.
-	int baseLine;
-	Size label_size = getTextSize(label, FONT_FACE, FONT_SCALE, THICKNESS, &baseLine);
-	top = max(top, label_size.height);
-	// Top left corner.
-	Point tlc = Point(left, top);
-	// Bottom right corner.
-	Point brc = Point(left + label_size.width, top + label_size.height + baseLine);
-	// Draw black rectangle.
-	rectangle(input_image, tlc, brc, BLACK, FILLED);
-	// Put the label on the black rectangle.
-	putText(input_image, label, Point(left, top + label_size.height), FONT_FACE, FONT_SCALE, YELLOW, THICKNESS);
-}
-
-vector<Mat> Detection::pre_process(Mat &input_image) {
-	// Convert to blob.
-	Mat blob;
-	blobFromImage(input_image, blob, 1. / 255., Size(INPUT_WIDTH, INPUT_HEIGHT), Scalar(), true, false);
-
-	net.setInput(blob);
-
-	// Forward propagate.
-	vector<Mat> outputs;
-	net.forward(outputs, net.getUnconnectedOutLayersNames());
-
-	return outputs;
 }
 
 string Detection::compute_IoU(array<int, 4> pred_boxes_vec[4], vector<array<int, 4>> gr_boxes_vec) {
@@ -161,127 +326,15 @@ string Detection::compute_IoU(array<int, 4> pred_boxes_vec[4], vector<array<int,
     return out;
 }
 
-void Detection::write_output(array<int, 4> ordered_bb[4]) {
-
-    ofstream outfile("./output/out.txt");
-
-    // write orderd output
-    for (int i = 0; i < 4; i++) {
-        //write the output with class id
-        if (ordered_bb[i][0] != -1) {
-            outfile << ordered_bb[i][0] << " " << ordered_bb[i][1] << " " << ordered_bb[i][2] << " " << ordered_bb[i][3]
-                    << " " << i << " " << "\n";
-        }
-
-    }
-
-    outfile.close();
-}
-
 void Detection::post_process(Mat &input_image, vector<Mat> &outputs, const vector<string> &class_name,
                              vector<array<int, 4>> gr_boxes_vec, string &IoU, array<int, 4> ordered_bb[4]) {
 
-    // Initialize vectors to hold respective outputs while unwrapping detections.
-    vector<int> class_ids;
-    vector<float> confidences;
-    vector<Rect> boxes;
-
-    // Resizing factor.
-    float x_factor = input_image.cols / INPUT_WIDTH;
-    float y_factor = input_image.rows / INPUT_HEIGHT;
-
-    float *data = (float *) outputs[0].data;
-
-    // Network output dimensions
-    const int dimensions = 9;
-    const int rows = 25200;
-
-    // Iterate through 25200 detections.
-    for (int i = 0; i < rows; ++i) {
-        float confidence = data[4];
-        // Discard bad detections and continue.
-        if (confidence >= CONFIDENCE_THRESHOLD) {
-            float *classes_scores = data + 5;
-            // Create a 1x85 Mat and store class scores of 80 classes.
-            Mat scores(1, class_name.size(), CV_32FC1, classes_scores);
-            // Perform minMaxLoc and acquire index of best class score.
-            Point class_id;
-            double max_class_score;
-            minMaxLoc(scores, 0, &max_class_score, 0, &class_id);
-            // Continue if the class score is above the threshold.
-            if (max_class_score > SCORE_THRESHOLD) {
-                // Store class ID and confidence in the pre-defined respective vectors.
-
-                confidences.push_back(confidence);
-                class_ids.push_back(class_id.x);
-
-                // Center.
-                float cx = data[0];
-                float cy = data[1];
-                // Box dimension.
-                float w = data[2];
-                float h = data[3];
-                // Bounding box coordinates.
-                int left = int((cx - 0.5 * w) * x_factor);
-                int top = int((cy - 0.5 * h) * y_factor);
-                int width = int(w * x_factor);
-                int height = int(h * y_factor);
-                // Store good detections in the boxes vector.
-                boxes.push_back(Rect(left, top, width, height));
-            }
-
-        }
-        // Jump to the next column.
-        data += 9;
-    }
-
-    // Perform Non-Maximum Suppression and draw predictions.
-    vector<int> indices;
-    NMSBoxes(boxes, confidences, SCORE_THRESHOLD, NMS_THRESHOLD, indices);
-
-
-    //array<int, 4> ordered_bb[4];
-    // init array
-    for (int i = 0; i < 4; i++) {
-        ordered_bb[i][0] = -1;
-    }
-
-
-    // -- compute bounding box coordinates
-    for (int i = 0; i < indices.size(); i++) {
-        int idx = indices[i];
-        Rect box = boxes[idx];
-
-        int left = box.x;
-        int top = box.y;
-        int width = box.width;
-        int height = box.height;
-
-        // Get the label for the class name and its confidence.
-        string label = format("%.2f", confidences[idx]);
-        label = class_name[class_ids[idx]] + ":" + label;
-
-        //cout << class_ids[idx] << " " << class_name[class_ids[idx]] << endl;
-
-        int id = class_ids[idx];
-        ordered_bb[id][0] = left;
-        ordered_bb[id][1] = top;
-        ordered_bb[id][2] = width;
-        ordered_bb[id][3] = height;
-
-
-        // Draw bounding box.
-        rectangle(input_image, Point(left, top), Point(left + width, top + height), LABELS_COLORS[class_ids[idx]],
-                  THICKNESS);
-
-        // Draw class labels.
-        draw_label(input_image, label, left, top);
-
-    }
+    post_process(input_image, outputs, class_name, ordered_bb);
 
     IoU = compute_IoU(ordered_bb, gr_boxes_vec);
 
 }
+
 
 void Detection::make_detection(cv::Mat &frame, const std::string& ground_truth_path) {
     vector<Mat> detections;
@@ -309,8 +362,6 @@ void Detection::make_detection(cv::Mat &frame, const std::string& ground_truth_p
     write_output(ordered_bb);
 
 }
-
-// -- TEST METHODS
 
 // -- test method to write all testset predicted bounding boxes
 void Detection::make_detection_testset(int N_IMAGES) {

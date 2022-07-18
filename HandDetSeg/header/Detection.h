@@ -54,9 +54,7 @@ class Detection {
 
         Detection(const std::string& class_list_path, const std::string& net_path);
 
-        void read_bb_file(const std::string& path, std::vector<std::array<int, 4>> &bb_vector);
-
-        void draw_label(cv::Mat& input_image, std::string label, int left, int top);
+                void draw_label(cv::Mat& input_image, std::string label, int left, int top);
 
         std::vector<cv::Mat> pre_process(cv::Mat &input_image);
 
@@ -65,13 +63,27 @@ class Detection {
         void post_process(cv::Mat &input_image, std::vector<cv::Mat> &outputs, const std::vector<std::string> &class_name,
                              std::vector<std::array<int, 4>> gr_boxes_vec, std::string &IoU, std::array<int, 4> ordered_bb[4]);
 
+        void make_detection(cv::Mat &frame);
+
         void write_output(std::array<int, 4> ordered_bb[4]);
+
+        /**
+        ------- TEST METHODS -------
+        **/
+
+        void read_bb_file(const std::string& path, std::vector<std::array<int, 4>> &bb_vector);
+
+        void post_process(cv::Mat &input_image, std::vector<cv::Mat> &outputs, const std::vector<std::string> &class_name,
+                          std::array<int, 4> ordered_bb[4]);
+
 
         void make_detection_testset(int N_IMAGES);
 
         void compute_avg_IoU_testset(int N_IMAGES);
 
         void make_detection(cv::Mat &frame, const std::string& ground_truth_path);
+
+
 
 };
 

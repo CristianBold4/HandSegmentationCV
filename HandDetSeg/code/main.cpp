@@ -2,40 +2,49 @@
 // Created by Cristian on 16/07/2022.
 //
 
-// Include Libraries.
-#include <opencv2/opencv.hpp>
-#include <fstream>
+// Include Libraries
 #include <iostream>
 #include "../header/Detection.h"
 #include "../header/Segmentation.h"
-// Namespaces.
+
+// Namespaces
 using namespace cv;
 using namespace std;
 using namespace cv::dnn;
 
 
-
 int main(int argc, char** argv)
 {
 
+    // -- path of the dictionary containing the map id - class
 	string class_list_path = "hands_labels.names";
-	string net_path = "model2.onnx";
+    // -- path of the exported trained model
+	string net_path = "aug_model.onnx";
 
 
-	// Load image.
-	Mat frame,frame_copy;
+	// -- load input image
+	Mat frame, frame_copy;
 	string img_path = argv[1];
 	frame = imread(img_path);
 	frame_copy = frame.clone();
 
 	if (frame.empty()) {
-	cerr << "Error reading input image!\n";
-	return -1;
+	    cerr << "Error reading input image!\n";
+	    return -1;
 	}
 
+    // -- detection part
 	Detection det = Detection(class_list_path, net_path);
-	det.make_detection(frame, argv[2]);
-	
+
+    if (argc == 3) {
+        det.make_detection(frame, argv[2]);
+    } else {
+        det.make_detection(frame);
+    }
+
+
+
+    // -- segmentation part
 	string gt_mask_path = argv[3];
 	Mat gt_mask = imread(gt_mask_path);
 	if (gt_mask.empty()) {

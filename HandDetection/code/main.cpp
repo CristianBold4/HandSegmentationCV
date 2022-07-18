@@ -19,7 +19,7 @@ int main(int argc, char** argv)
 {
 
 	string class_list_path = "hands_labels.names";
-	string net_path = "model2.onnx";
+	string net_path = "aug_model.onnx";
 
 
 	// Load image.

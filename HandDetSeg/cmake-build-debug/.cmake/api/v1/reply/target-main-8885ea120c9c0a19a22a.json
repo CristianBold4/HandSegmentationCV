@@ -1,0 +1,399 @@
+{
+	"artifacts" : 
+	[
+		{
+			"path" : "main.exe"
+		},
+		{
+			"path" : "main.pdb"
+		}
+	],
+	"backtrace" : 1,
+	"backtraceGraph" : 
+	{
+		"commands" : 
+		[
+			"add_executable",
+			"target_link_libraries",
+			"include_directories"
+		],
+		"files" : 
+		[
+			"CMakeLists.txt"
+		],
+		"nodes" : 
+		[
+			{
+				"file" : 0
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 8,
+				"parent" : 0
+			},
+			{
+				"command" : 1,
+				"file" : 0,
+				"line" : 11,
+				"parent" : 0
+			},
+			{
+				"command" : 2,
+				"file" : 0,
+				"line" : 10,
+				"parent" : 0
+			}
+		]
+	},
+	"compileGroups" : 
+	[
+		{
+			"includes" : 
+			[
+				{
+					"backtrace" : 3,
+					"isSystem" : true,
+					"path" : "C:/opencv/build/x86/mingw/install/include"
+				}
+			],
+			"language" : "CXX",
+			"sourceIndexes" : 
+			[
+				0,
+				1,
+				2
+			]
+		}
+	],
+	"id" : "main::@6890427a1f51a3e7e1df",
+	"link" : 
+	{
+		"commandFragments" : 
+		[
+			{
+				"fragment" : "",
+				"role" : "flags"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "C:\\opencv\\build\\x86\\mingw\\install\\x64\\mingw\\lib\\libopencv_gapi455.dll.a",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "C:\\opencv\\build\\x86\\mingw\\install\\x64\\mingw\\lib\\libopencv_stitching455.dll.a",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "C:\\opencv\\build\\x86\\mingw\\install\\x64\\mingw\\lib\\libopencv_aruco455.dll.a",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "C:\\opencv\\build\\x86\\mingw\\install\\x64\\mingw\\lib\\libopencv_barcode455.dll.a",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "C:\\opencv\\build\\x86\\mingw\\install\\x64\\mingw\\lib\\libopencv_bgsegm455.dll.a",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "C:\\opencv\\build\\x86\\mingw\\install\\x64\\mingw\\lib\\libopencv_ccalib455.dll.a",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "C:\\opencv\\build\\x86\\mingw\\install\\x64\\mingw\\lib\\libopencv_dnn_objdetect455.dll.a",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "C:\\opencv\\build\\x86\\mingw\\install\\x64\\mingw\\lib\\libopencv_dnn_superres455.dll.a",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "C:\\opencv\\build\\x86\\mingw\\install\\x64\\mingw\\lib\\libopencv_dpm455.dll.a",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "C:\\opencv\\build\\x86\\mingw\\install\\x64\\mingw\\lib\\libopencv_face455.dll.a",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "C:\\opencv\\build\\x86\\mingw\\install\\x64\\mingw\\lib\\libopencv_fuzzy455.dll.a",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "C:\\opencv\\build\\x86\\mingw\\install\\x64\\mingw\\lib\\libopencv_hfs455.dll.a",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "C:\\opencv\\build\\x86\\mingw\\install\\x64\\mingw\\lib\\libopencv_img_hash455.dll.a",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "C:\\opencv\\build\\x86\\mingw\\install\\x64\\mingw\\lib\\libopencv_intensity_transform455.dll.a",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "C:\\opencv\\build\\x86\\mingw\\install\\x64\\mingw\\lib\\libopencv_line_descriptor455.dll.a",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "C:\\opencv\\build\\x86\\mingw\\install\\x64\\mingw\\lib\\libopencv_mcc455.dll.a",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "C:\\opencv\\build\\x86\\mingw\\install\\x64\\mingw\\lib\\libopencv_quality455.dll.a",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "C:\\opencv\\build\\x86\\mingw\\install\\x64\\mingw\\lib\\libopencv_rapid455.dll.a",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "C:\\opencv\\build\\x86\\mingw\\install\\x64\\mingw\\lib\\libopencv_reg455.dll.a",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "C:\\opencv\\build\\x86\\mingw\\install\\x64\\mingw\\lib\\libopencv_rgbd455.dll.a",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "C:\\opencv\\build\\x86\\mingw\\install\\x64\\mingw\\lib\\libopencv_saliency455.dll.a",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "C:\\opencv\\build\\x86\\mingw\\install\\x64\\mingw\\lib\\libopencv_stereo455.dll.a",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "C:\\opencv\\build\\x86\\mingw\\install\\x64\\mingw\\lib\\libopencv_structured_light455.dll.a",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "C:\\opencv\\build\\x86\\mingw\\install\\x64\\mingw\\lib\\libopencv_superres455.dll.a",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "C:\\opencv\\build\\x86\\mingw\\install\\x64\\mingw\\lib\\libopencv_surface_matching455.dll.a",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "C:\\opencv\\build\\x86\\mingw\\install\\x64\\mingw\\lib\\libopencv_tracking455.dll.a",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "C:\\opencv\\build\\x86\\mingw\\install\\x64\\mingw\\lib\\libopencv_videostab455.dll.a",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "C:\\opencv\\build\\x86\\mingw\\install\\x64\\mingw\\lib\\libopencv_wechat_qrcode455.dll.a",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "C:\\opencv\\build\\x86\\mingw\\install\\x64\\mingw\\lib\\libopencv_xfeatures2d455.dll.a",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "C:\\opencv\\build\\x86\\mingw\\install\\x64\\mingw\\lib\\libopencv_xobjdetect455.dll.a",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "C:\\opencv\\build\\x86\\mingw\\install\\x64\\mingw\\lib\\libopencv_xphoto455.dll.a",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "C:\\opencv\\build\\x86\\mingw\\install\\x64\\mingw\\lib\\libopencv_shape455.dll.a",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "C:\\opencv\\build\\x86\\mingw\\install\\x64\\mingw\\lib\\libopencv_highgui455.dll.a",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "C:\\opencv\\build\\x86\\mingw\\install\\x64\\mingw\\lib\\libopencv_datasets455.dll.a",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "C:\\opencv\\build\\x86\\mingw\\install\\x64\\mingw\\lib\\libopencv_plot455.dll.a",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "C:\\opencv\\build\\x86\\mingw\\install\\x64\\mingw\\lib\\libopencv_text455.dll.a",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "C:\\opencv\\build\\x86\\mingw\\install\\x64\\mingw\\lib\\libopencv_ml455.dll.a",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "C:\\opencv\\build\\x86\\mingw\\install\\x64\\mingw\\lib\\libopencv_phase_unwrapping455.dll.a",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "C:\\opencv\\build\\x86\\mingw\\install\\x64\\mingw\\lib\\libopencv_optflow455.dll.a",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "C:\\opencv\\build\\x86\\mingw\\install\\x64\\mingw\\lib\\libopencv_ximgproc455.dll.a",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "C:\\opencv\\build\\x86\\mingw\\install\\x64\\mingw\\lib\\libopencv_video455.dll.a",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "C:\\opencv\\build\\x86\\mingw\\install\\x64\\mingw\\lib\\libopencv_videoio455.dll.a",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "C:\\opencv\\build\\x86\\mingw\\install\\x64\\mingw\\lib\\libopencv_imgcodecs455.dll.a",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "C:\\opencv\\build\\x86\\mingw\\install\\x64\\mingw\\lib\\libopencv_objdetect455.dll.a",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "C:\\opencv\\build\\x86\\mingw\\install\\x64\\mingw\\lib\\libopencv_calib3d455.dll.a",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "C:\\opencv\\build\\x86\\mingw\\install\\x64\\mingw\\lib\\libopencv_dnn455.dll.a",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "C:\\opencv\\build\\x86\\mingw\\install\\x64\\mingw\\lib\\libopencv_features2d455.dll.a",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "C:\\opencv\\build\\x86\\mingw\\install\\x64\\mingw\\lib\\libopencv_flann455.dll.a",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "C:\\opencv\\build\\x86\\mingw\\install\\x64\\mingw\\lib\\libopencv_photo455.dll.a",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "C:\\opencv\\build\\x86\\mingw\\install\\x64\\mingw\\lib\\libopencv_imgproc455.dll.a",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "C:\\opencv\\build\\x86\\mingw\\install\\x64\\mingw\\lib\\libopencv_core455.dll.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "-lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32",
+				"role" : "libraries"
+			}
+		],
+		"language" : "CXX"
+	},
+	"name" : "main",
+	"nameOnDisk" : "main.exe",
+	"paths" : 
+	{
+		"build" : ".",
+		"source" : "."
+	},
+	"sourceGroups" : 
+	[
+		{
+			"name" : "Source Files",
+			"sourceIndexes" : 
+			[
+				0,
+				1,
+				2
+			]
+		},
+		{
+			"name" : "Header Files",
+			"sourceIndexes" : 
+			[
+				3,
+				4
+			]
+		}
+	],
+	"sources" : 
+	[
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "code/main.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "code/Detection.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "code/Segmentation.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"path" : "header/Detection.h",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"path" : "header/Segmentation.h",
+			"sourceGroupIndex" : 1
+		}
+	],
+	"type" : "EXECUTABLE"
+}

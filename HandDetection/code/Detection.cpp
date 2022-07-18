@@ -11,6 +11,7 @@ using namespace cv;
 using namespace std;
 using namespace cv::dnn;
 
+
 Detection::Detection(const std::string &class_list_path, const std::string &net_path) {
     // Load class list.
     ifstream ifs(class_list_path);
