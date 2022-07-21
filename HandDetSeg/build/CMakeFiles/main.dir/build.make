@@ -43,10 +43,10 @@ RM = /usr/bin/cmake -E remove -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/local/bellric97090/desktop/CVproject/handdetseg
+CMAKE_SOURCE_DIR = /home/local/bellric97090/desktop/cvproject/handdetseg
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/local/bellric97090/desktop/CVproject/handdetseg/build
+CMAKE_BINARY_DIR = /home/local/bellric97090/desktop/cvproject/handdetseg/build
 
 # Include any dependencies generated for this target.
 include CMakeFiles/main.dir/depend.make
@@ -59,42 +59,42 @@ include CMakeFiles/main.dir/flags.make
 
 CMakeFiles/main.dir/code/main.cpp.o: CMakeFiles/main.dir/flags.make
 CMakeFiles/main.dir/code/main.cpp.o: ../code/main.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/local/bellric97090/desktop/CVproject/handdetseg/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/main.dir/code/main.cpp.o"
-	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/main.dir/code/main.cpp.o -c /home/local/bellric97090/desktop/CVproject/handdetseg/code/main.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/local/bellric97090/desktop/cvproject/handdetseg/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/main.dir/code/main.cpp.o"
+	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/main.dir/code/main.cpp.o -c /home/local/bellric97090/desktop/cvproject/handdetseg/code/main.cpp
 
 CMakeFiles/main.dir/code/main.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/main.dir/code/main.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/local/bellric97090/desktop/CVproject/handdetseg/code/main.cpp > CMakeFiles/main.dir/code/main.cpp.i
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/local/bellric97090/desktop/cvproject/handdetseg/code/main.cpp > CMakeFiles/main.dir/code/main.cpp.i
 
 CMakeFiles/main.dir/code/main.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/main.dir/code/main.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/local/bellric97090/desktop/CVproject/handdetseg/code/main.cpp -o CMakeFiles/main.dir/code/main.cpp.s
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/local/bellric97090/desktop/cvproject/handdetseg/code/main.cpp -o CMakeFiles/main.dir/code/main.cpp.s
 
 CMakeFiles/main.dir/code/Detection.cpp.o: CMakeFiles/main.dir/flags.make
 CMakeFiles/main.dir/code/Detection.cpp.o: ../code/Detection.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/local/bellric97090/desktop/CVproject/handdetseg/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/main.dir/code/Detection.cpp.o"
-	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/main.dir/code/Detection.cpp.o -c /home/local/bellric97090/desktop/CVproject/handdetseg/code/Detection.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/local/bellric97090/desktop/cvproject/handdetseg/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/main.dir/code/Detection.cpp.o"
+	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/main.dir/code/Detection.cpp.o -c /home/local/bellric97090/desktop/cvproject/handdetseg/code/Detection.cpp
 
 CMakeFiles/main.dir/code/Detection.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/main.dir/code/Detection.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/local/bellric97090/desktop/CVproject/handdetseg/code/Detection.cpp > CMakeFiles/main.dir/code/Detection.cpp.i
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/local/bellric97090/desktop/cvproject/handdetseg/code/Detection.cpp > CMakeFiles/main.dir/code/Detection.cpp.i
 
 CMakeFiles/main.dir/code/Detection.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/main.dir/code/Detection.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/local/bellric97090/desktop/CVproject/handdetseg/code/Detection.cpp -o CMakeFiles/main.dir/code/Detection.cpp.s
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/local/bellric97090/desktop/cvproject/handdetseg/code/Detection.cpp -o CMakeFiles/main.dir/code/Detection.cpp.s
 
 CMakeFiles/main.dir/code/Segmentation.cpp.o: CMakeFiles/main.dir/flags.make
 CMakeFiles/main.dir/code/Segmentation.cpp.o: ../code/Segmentation.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/local/bellric97090/desktop/CVproject/handdetseg/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/main.dir/code/Segmentation.cpp.o"
-	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/main.dir/code/Segmentation.cpp.o -c /home/local/bellric97090/desktop/CVproject/handdetseg/code/Segmentation.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/local/bellric97090/desktop/cvproject/handdetseg/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/main.dir/code/Segmentation.cpp.o"
+	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/main.dir/code/Segmentation.cpp.o -c /home/local/bellric97090/desktop/cvproject/handdetseg/code/Segmentation.cpp
 
 CMakeFiles/main.dir/code/Segmentation.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/main.dir/code/Segmentation.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/local/bellric97090/desktop/CVproject/handdetseg/code/Segmentation.cpp > CMakeFiles/main.dir/code/Segmentation.cpp.i
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/local/bellric97090/desktop/cvproject/handdetseg/code/Segmentation.cpp > CMakeFiles/main.dir/code/Segmentation.cpp.i
 
 CMakeFiles/main.dir/code/Segmentation.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/main.dir/code/Segmentation.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/local/bellric97090/desktop/CVproject/handdetseg/code/Segmentation.cpp -o CMakeFiles/main.dir/code/Segmentation.cpp.s
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/local/bellric97090/desktop/cvproject/handdetseg/code/Segmentation.cpp -o CMakeFiles/main.dir/code/Segmentation.cpp.s
 
 # Object files for target main
 main_OBJECTS = \
@@ -166,7 +166,7 @@ main: /usr/local/lib/libopencv_photo.so.4.5.2
 main: /usr/local/lib/libopencv_imgproc.so.4.5.2
 main: /usr/local/lib/libopencv_core.so.4.5.2
 main: CMakeFiles/main.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/local/bellric97090/desktop/CVproject/handdetseg/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Linking CXX executable main"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/local/bellric97090/desktop/cvproject/handdetseg/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Linking CXX executable main"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/main.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.
@@ -179,6 +179,6 @@ CMakeFiles/main.dir/clean:
 .PHONY : CMakeFiles/main.dir/clean
 
 CMakeFiles/main.dir/depend:
-	cd /home/local/bellric97090/desktop/CVproject/handdetseg/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/local/bellric97090/desktop/CVproject/handdetseg /home/local/bellric97090/desktop/CVproject/handdetseg /home/local/bellric97090/desktop/CVproject/handdetseg/build /home/local/bellric97090/desktop/CVproject/handdetseg/build /home/local/bellric97090/desktop/CVproject/handdetseg/build/CMakeFiles/main.dir/DependInfo.cmake --color=$(COLOR)
+	cd /home/local/bellric97090/desktop/cvproject/handdetseg/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/local/bellric97090/desktop/cvproject/handdetseg /home/local/bellric97090/desktop/cvproject/handdetseg /home/local/bellric97090/desktop/cvproject/handdetseg/build /home/local/bellric97090/desktop/cvproject/handdetseg/build /home/local/bellric97090/desktop/cvproject/handdetseg/build/CMakeFiles/main.dir/DependInfo.cmake --color=$(COLOR)
 .PHONY : CMakeFiles/main.dir/depend
 

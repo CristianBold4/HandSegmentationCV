@@ -6,19 +6,15 @@
 
 #IncludeRegexTransform: 
 
-/home/local/bellric97090/desktop/CVproject/handdetseg/code/main.cpp
-opencv2/opencv.hpp
--
-fstream
--
+/home/local/bellric97090/desktop/cvproject/handdetseg/code/main.cpp
 iostream
 -
 ../header/Detection.h
-/home/local/bellric97090/desktop/CVproject/handdetseg/header/Detection.h
+/home/local/bellric97090/desktop/cvproject/handdetseg/header/Detection.h
 ../header/Segmentation.h
-/home/local/bellric97090/desktop/CVproject/handdetseg/header/Segmentation.h
+/home/local/bellric97090/desktop/cvproject/handdetseg/header/Segmentation.h
 
-/home/local/bellric97090/desktop/CVproject/handdetseg/header/Detection.h
+/home/local/bellric97090/desktop/cvproject/handdetseg/header/Detection.h
 opencv2/highgui.hpp
 -
 opencv2/imgproc.hpp
@@ -30,7 +26,7 @@ fstream
 iostream
 -
 
-/home/local/bellric97090/desktop/CVproject/handdetseg/header/Segmentation.h
+/home/local/bellric97090/desktop/cvproject/handdetseg/header/Segmentation.h
 opencv2/highgui.hpp
 -
 opencv2/imgproc.hpp

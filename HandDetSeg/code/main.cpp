@@ -13,14 +13,90 @@ using namespace std;
 using namespace cv::dnn;
 
 
+
+void compute_testset_performance(int N_IMAGES){
+
+    float pixel_accuracy_sum=0;
+    float IOU_sum=0;
+
+    for(int j=1; j<=N_IMAGES; j++){
+        cout<< "img "<< j<< "   ";
+        if(j==16) j++; //salto immagine 16
+        Mat frame, frame_copy;
+
+        string img_path, det_path,gt_mask_path;
+
+        if (j < 10) {
+            img_path = "./input/0" + to_string(j) + ".jpg";
+            det_path = "./det/0" + to_string(j) + ".txt";
+            gt_mask_path = "./gt_mask/0" + to_string(j) + ".png";
+        } else {
+            img_path = "./input/" + to_string(j) + ".jpg";
+            det_path = "./det/" + to_string(j) + ".txt";
+             gt_mask_path = "./gt_mask/" + to_string(j) + ".png";
+
+        }
+        
+        frame = imread(img_path);
+        frame_copy = frame.clone();
+
+        if (frame.empty()) {
+            cerr << "Error reading input image!\n";
+            return;
+        }
+
+        // -- path of the dictionary containing the map id - class
+	    string class_list_path = "hands_labels.names";
+        // -- path of the exported trained model
+	    string net_path = "aug_model.onnx";
+        string bb_path = "output/out.txt";
+
+        Detection det = Detection(class_list_path, net_path);
+	    Segmentation seg;
+	    
+	    // -- DETECTION
+        det.make_detection(frame);
+        
+        // -- SEGMENTATION
+        vector<array<int, 4>> boxes_vec;
+	    vector<int> class_labels;
+	    vector<Mat> difference_bb_vec;
+	    vector<Mat> treshold_bb_vec;
+	    Mat  bin_mask, col_mask;
+	    Mat gt_mask = imread(gt_mask_path);
+	    if (gt_mask.empty()) {
+		    cerr << "Error! ground truth mask image is empty\n";
+	    }
+	    cvtColor(gt_mask, gt_mask, COLOR_BGR2GRAY);
+
+	    seg.read_bb_file_label(frame_copy.rows, frame_copy.cols, bb_path, boxes_vec, class_labels);
+	    seg.difference_from_center_hand_label(frame_copy, difference_bb_vec, boxes_vec, class_labels);
+	    seg.treshold_difference(difference_bb_vec, treshold_bb_vec);
+	    seg.segmentation_GB_mask(frame_copy, col_mask, bin_mask, treshold_bb_vec, boxes_vec, class_labels);
+	    seg.apply_mask(frame_copy, frame_copy, col_mask, false);
+	    float PA = seg.compute_pixel_accuracy(bin_mask, gt_mask);
+	    float IOU = seg.compute_IOU(bin_mask, gt_mask);
+	    pixel_accuracy_sum += PA;
+	    IOU_sum += IOU;
+	    cout << "PA= " << PA << ";	IOU= " << IOU << "\n";
+    }
+     float pixel_accuracy_avg = pixel_accuracy_sum/(N_IMAGES-1); //saltato 16
+     float IOU_avg = IOU_sum/(N_IMAGES-1);
+   
+    cout << "\nSegmentation:	avg_PA= " << pixel_accuracy_avg << ";	avg_IOU= " << IOU_avg << "\n";
+}
+
+
 int main(int argc, char** argv)
 {
+
+    //compute_testset_performance(20);
 
     // -- path of the dictionary containing the map id - class
 	string class_list_path = "hands_labels.names";
     // -- path of the exported trained model
 	string net_path = "aug_model.onnx";
-
+    string bb_path = "output/out.txt";
 
 	// -- load input image
 	Mat frame, frame_copy;
@@ -33,64 +109,36 @@ int main(int argc, char** argv)
 	    return -1;
 	}
 
-    // -- detection part
-	Detection det = Detection(class_list_path, net_path);
 
-    if (argc == 3) {
+	Detection det = Detection(class_list_path, net_path);
+	Segmentation seg;
+
+    if (argc == 4) {
+        // -- detection part
         det.make_detection(frame, argv[2]);
+        
+        // -- segmentation part
+        seg.make_segmentation(frame_copy, bb_path,argv[3]);
+    
     } else {
+        // -- detection part
         det.make_detection(frame);
+        
+        // -- segmentation part
+        seg.make_segmentation(frame_copy, bb_path);
     }
 
-
-
-    // -- segmentation part
-	string gt_mask_path = argv[3];
-	Mat gt_mask = imread(gt_mask_path);
-	if (gt_mask.empty()) {
-	cerr << "Error reading ground truth image for segmentation!\n";
-	return -1;
-	}
-	
-	
 	//det.make_detection_testset(20);
 	//det.compute_avg_IoU_testset(20);
 
 	// -- show output
-	imshow("Output", frame);
+	imshow("Detection", frame);
 	waitKey(0);
-
 	imwrite("detection.jpg", frame);
 	
-	
-	Segmentation seg;
-	vector<array<int, 4>> boxes_vec;
-	vector<int> class_labels;
-	
-	string bb_path = "output/out.txt";
-	
-	Mat src_bb,tres_diff, segmented;
-	seg.read_bb_file_label(frame_copy.rows, frame_copy.cols, bb_path, boxes_vec, class_labels);
-	//seg.draw_box_image_label(frame_copy, src_bb, boxes_vec, class_labels, true);
-	//seg.show_image(src_bb, "src_bb");
-	
-	vector<Mat> difference_bb_vec;
-	seg.difference_from_center_hand_label(frame_copy, difference_bb_vec, boxes_vec, class_labels);
-	
-	vector<Mat> treshold_bb_vec;
-	seg.treshold_difference(difference_bb_vec, treshold_bb_vec);
-	
-	seg.segmentation_GB_mask(frame_copy, segmented, tres_diff, treshold_bb_vec, boxes_vec, class_labels);
-	
-	seg.apply_mask(frame_copy, segmented, segmented, false);
-	seg.show_image(segmented, "GB-mask segmentation"); 
-	imwrite("segmentation.jpg", segmented);
-	
-    cvtColor(gt_mask, gt_mask, COLOR_BGR2GRAY);
-	float pixel_accuracy = seg.compute_pixel_accuracy(tres_diff, gt_mask);
-	float IOU = seg.compute_IOU(tres_diff, gt_mask);
-	
-	cout<< "Segmentation:   PA:"<< pixel_accuracy << "      IOU:" << IOU << "\n";
+	imshow("Segmentation", frame_copy);
+	waitKey(0);
+	imwrite("segmentation.jpg", frame_copy);
 
 	return 0;
 }

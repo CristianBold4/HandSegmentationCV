@@ -1,4 +1,4 @@
-#include "Segmentation.h"
+#include "../header/Segmentation.h"
 #include <iostream>
 #include <fstream>
 
@@ -70,7 +70,7 @@ void Segmentation::read_bb_file_label(int src_r, int src_c, string path, vector<
 		int cordinate_counter = 0;
 		array<int, 4> cordinates;
 
-		while (getline(stringstream, parsed,'	')) {
+		while (getline(stringstream, parsed,' ')) {
 			int c = stoi(parsed);
 			if (cordinate_counter < 4) { cordinates[cordinate_counter] = c; /*cout << cordinate_counter << " : " << c << "\n";*/	}
 			else if (cordinate_counter == 4) { labels.push_back(c); }

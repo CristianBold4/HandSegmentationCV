@@ -1,4 +1,4 @@
-# Install script for directory: /home/local/bellric97090/desktop/CVproject/handdetseg
+# Install script for directory: /home/local/bellric97090/desktop/cvproject/handdetseg
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -45,5 +45,5 @@ endif()
 
 string(REPLACE ";" "\n" CMAKE_INSTALL_MANIFEST_CONTENT
        "${CMAKE_INSTALL_MANIFEST_FILES}")
-file(WRITE "/home/local/bellric97090/desktop/CVproject/handdetseg/build/${CMAKE_INSTALL_MANIFEST}"
+file(WRITE "/home/local/bellric97090/desktop/cvproject/handdetseg/build/${CMAKE_INSTALL_MANIFEST}"
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")

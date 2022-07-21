@@ -4,9 +4,9 @@ set(CMAKE_DEPENDS_LANGUAGES
   )
 # The set of files for implicit dependencies of each language:
 set(CMAKE_DEPENDS_CHECK_CXX
-  "/home/local/bellric97090/desktop/CVproject/handdetseg/code/Detection.cpp" "/home/local/bellric97090/desktop/CVproject/handdetseg/build/CMakeFiles/main.dir/code/Detection.cpp.o"
-  "/home/local/bellric97090/desktop/CVproject/handdetseg/code/Segmentation.cpp" "/home/local/bellric97090/desktop/CVproject/handdetseg/build/CMakeFiles/main.dir/code/Segmentation.cpp.o"
-  "/home/local/bellric97090/desktop/CVproject/handdetseg/code/main.cpp" "/home/local/bellric97090/desktop/CVproject/handdetseg/build/CMakeFiles/main.dir/code/main.cpp.o"
+  "/home/local/bellric97090/desktop/cvproject/handdetseg/code/Detection.cpp" "/home/local/bellric97090/desktop/cvproject/handdetseg/build/CMakeFiles/main.dir/code/Detection.cpp.o"
+  "/home/local/bellric97090/desktop/cvproject/handdetseg/code/Segmentation.cpp" "/home/local/bellric97090/desktop/cvproject/handdetseg/build/CMakeFiles/main.dir/code/Segmentation.cpp.o"
+  "/home/local/bellric97090/desktop/cvproject/handdetseg/code/main.cpp" "/home/local/bellric97090/desktop/cvproject/handdetseg/build/CMakeFiles/main.dir/code/main.cpp.o"
   )
 set(CMAKE_CXX_COMPILER_ID "GNU")
 
