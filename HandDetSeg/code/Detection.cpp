@@ -94,7 +94,7 @@ class Detection::bbox {
 class Detection::Compare {
     public:
         bool operator() (bbox b1, bbox b2)  {
-            return (b1.cid < b2.cid);
+            return (b1.cid > b2.cid);
         }
 };
 
@@ -160,8 +160,8 @@ void Detection::post_process(Mat &input_image, vector<Mat> &outputs, const vecto
                 // -- Bounding box coordinates.
                 int left = int((cx - 0.5 * w) * x_factor);
                 int top = int((cy - 0.5 * h) * y_factor);
-                int width = max(int(w * x_factor), input_image.cols);
-                int height = max(int(h * y_factor), input_image.rows);
+                int width = min(int(w * x_factor), input_image.cols);
+                int height = min(int(h * y_factor), input_image.rows);
                 // -- Store good detections in the boxes vector.
                 boxes.push_back(Rect(left, top, width, height));
             }
@@ -217,7 +217,7 @@ void Detection::post_process(Mat &input_image, vector<Mat> &outputs, const vecto
  */
 void Detection::write_output(vector<bbox> &pred_boxes) {
 
-    ofstream outfile("./output/det.txt");
+    ofstream outfile("./output/out.txt");
 
     // write ordered output
     for (auto & bb : pred_boxes) {
@@ -488,7 +488,7 @@ void Detection::make_detection_testset(int N_IMAGES) {
 // test method to compute average IoU on testset
 void Detection::compute_avg_IoU_testset(int N_IMAGES) {
 
-    ofstream outfile_IoU("./test_results/IoU_model2.txt");
+    ofstream outfile_IoU("./test_results/IoU.txt");
 
     for (int j = 1; j <= N_IMAGES; j++) {
 

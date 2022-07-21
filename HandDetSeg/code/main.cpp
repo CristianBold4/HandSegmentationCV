@@ -131,7 +131,7 @@ int main(int argc, char** argv)
 	Detection det = Detection(class_list_path, net_path);
 	Segmentation seg;
 
-    //det.compute_avg_IoU_testset(20);
+    det.compute_avg_IoU_testset(20);
 
     if (argc == 4) {
         // -- detection part
