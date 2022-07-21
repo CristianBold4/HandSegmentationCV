@@ -18,12 +18,15 @@ void compute_testset_performance(int N_IMAGES){
 
     float pixel_accuracy_sum=0;
     float IOU_sum=0;
-
+     ofstream out_file("segmentation_test_4.txt");
+    out_file<< "TEST 4 - K-means \n\n";
+    
     for(int j=1; j<=N_IMAGES; j++){
         cout<< "img "<< j<< "   ";
-        if(j==16) j++; //salto immagine 16
+        out_file<< "img "<< j<< "   ";
+        //if(j==16) j++; //salto immagine 16
         Mat frame, frame_copy;
-
+       
         string img_path, det_path,gt_mask_path;
 
         if (j < 10) {
@@ -34,7 +37,6 @@ void compute_testset_performance(int N_IMAGES){
             img_path = "./input/" + to_string(j) + ".jpg";
             det_path = "./det/" + to_string(j) + ".txt";
              gt_mask_path = "./gt_mask/" + to_string(j) + ".png";
-
         }
         
         frame = imread(img_path);
@@ -70,27 +72,38 @@ void compute_testset_performance(int N_IMAGES){
 	    cvtColor(gt_mask, gt_mask, COLOR_BGR2GRAY);
 
 	    seg.read_bb_file_label(frame_copy.rows, frame_copy.cols, bb_path, boxes_vec, class_labels);
-	    seg.difference_from_center_hand_label(frame_copy, difference_bb_vec, boxes_vec, class_labels);
-	    seg.treshold_difference(difference_bb_vec, treshold_bb_vec);
-	    seg.segmentation_GB_mask(frame_copy, col_mask, bin_mask, treshold_bb_vec, boxes_vec, class_labels);
+	    if(j==16) { boxes_vec[1][2] = boxes_vec[1][2]-1;  } //fix img 16
+	    seg.segmentation_Km(frame_copy,col_mask, bin_mask, boxes_vec, class_labels);
+	    //seg.difference_from_center_hand_label(frame_copy, difference_bb_vec, boxes_vec, class_labels);
+	    //seg.difference_from_center_hand(frame_copy, difference_bb_vec, boxes_vec);
+	    //seg.treshold_difference(difference_bb_vec, treshold_bb_vec);
+	   // seg.segmentation_GB_mask(frame_copy, col_mask, bin_mask, treshold_bb_vec, boxes_vec, class_labels);
+	    //seg.segmentation_GB(frame_copy, col_mask, bin_mask, boxes_vec, class_labels);
+	    
 	    seg.apply_mask(frame_copy, frame_copy, col_mask, false);
+	    
 	    float PA = seg.compute_pixel_accuracy(bin_mask, gt_mask);
 	    float IOU = seg.compute_IOU(bin_mask, gt_mask);
 	    pixel_accuracy_sum += PA;
 	    IOU_sum += IOU;
-	    cout << "PA= " << PA << ";	IOU= " << IOU << "\n";
+	    cout << "PA= " << PA << ";	IOU= " << IOU << "\n\n";
+	    out_file << "PA= " << PA << ";	IOU= " << IOU << "\n\n";
     }
-     float pixel_accuracy_avg = pixel_accuracy_sum/(N_IMAGES-1); //saltato 16
-     float IOU_avg = IOU_sum/(N_IMAGES-1);
+     float pixel_accuracy_avg = pixel_accuracy_sum/(N_IMAGES); 
+     float IOU_avg = IOU_sum/(N_IMAGES);
    
     cout << "\nSegmentation:	avg_PA= " << pixel_accuracy_avg << ";	avg_IOU= " << IOU_avg << "\n";
+    out_file << "\nSegmentation:	avg_PA= " << pixel_accuracy_avg << ";	avg_IOU= " << IOU_avg << "\n";
+    
+    out_file.close();
 }
 
 
 int main(int argc, char** argv)
 {
 
-    //compute_testset_performance(20);
+   // compute_testset_performance(20);
+    //waitKey(0);
 
     // -- path of the dictionary containing the map id - class
 	string class_list_path = "hands_labels.names";

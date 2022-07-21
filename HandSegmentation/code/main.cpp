@@ -22,6 +22,7 @@ int main(int argc, char** argv) {
 	float IOU_sum = 0;
 
 
+	
 	for (int k = 0; k < test_indeces.size(); k++) {
 		int test_image_num = test_indeces[k];
 		//remember to change the det folder to det_label if using labels
@@ -67,28 +68,29 @@ int main(int argc, char** argv) {
 		//seg.show_image(pyr_filtered, to_string(test_indeces[k]) + ") pyrMeanShiftFiltered");
 
 		//compute difference image
-		Mat  tres_diff, gb_th;
+		Mat  bin_mask, gb_th;
 		vector<Mat> difference_bb_vec;
 		seg.difference_from_center_hand_label(src, difference_bb_vec, boxes_vec, class_labels);
 	
 
 		vector<Mat> treshold_bb_vec;
 		seg.treshold_difference(difference_bb_vec, treshold_bb_vec);
-		//seg.show_image(tres_diff, to_string(test_indeces[k]) + ") difference tresholded");
+		//seg.show_image(bin_mask, to_string(test_indeces[k]) + ") difference tresholded");
 		
-		seg.segmentation_GB_mask(src, gb_th, tres_diff, treshold_bb_vec, boxes_vec, class_labels);
+		//seg.segmentation_GB_mask(src, gb_th, bin_mask, treshold_bb_vec, boxes_vec, class_labels);
+		seg.segmentation_GB(src, gb_th, bin_mask, boxes_vec, class_labels);
 		//seg.show_image(gb_th,to_string(test_indeces[k]) +") GB mask");
-		//seg.show_image(tres_diff, to_string(test_indeces[k]) + ") bin mask");
+		//seg.show_image(bin_mask, to_string(test_indeces[k]) + ") bin mask");
 
-		//seg.segmentation_Km(src, gb_th, tres_diff, boxes_vec, class_labels);
+		//seg.segmentation_Km(src, gb_th, bin_mask, boxes_vec, class_labels);
 
 		seg.apply_mask(src, gb_th, gb_th, false);
 		seg.show_image(gb_th, to_string(test_indeces[k]) + ") GB-mask segmentation"); 
 
 		cvtColor(gt_mask, gt_mask, COLOR_BGR2GRAY);
 		
-		float pixel_accuracy = seg.compute_pixel_accuracy(tres_diff, gt_mask);
-		float IOU = seg.compute_IOU(tres_diff, gt_mask);
+		float pixel_accuracy = seg.compute_pixel_accuracy(bin_mask, gt_mask);
+		float IOU = seg.compute_IOU(bin_mask, gt_mask);
 		pixel_accuracy_sum += pixel_accuracy;
 		IOU_sum += IOU;
 		String arrow = "";
@@ -108,6 +110,8 @@ int main(int argc, char** argv) {
 	out_file << "\naverage IOU: " << IOU_sum / test_indeces.size() << " \n";
 
 	out_file.close();
+
+	
 
 
 	return 0;

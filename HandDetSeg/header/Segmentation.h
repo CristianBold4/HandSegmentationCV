@@ -19,7 +19,7 @@ public:
 	void segmentation_Km(cv::Mat src, cv::Mat& dst, cv::Mat& bin_mask, std::vector<std::array<int, 4>> bound_boxes, std::vector<int> class_labels);
 	void segmentation_GB(cv::Mat src, cv::Mat& dst, cv::Mat& bin_mask, std::vector<std::array<int, 4>> bound_boxes, std::vector<int> class_labels);
 	void segmentation_GB_mask(cv::Mat src, cv::Mat& dst, cv::Mat& mask, std::vector<cv::Mat>& mask_vec, std::vector<std::array<int, 4>> bound_boxes, std::vector<int> class_labels);
-	void difference_from_center_hand(cv::Mat src, cv::Mat& dst, std::vector<std::array<int, 4>> bound_boxes);
+	void difference_from_center_hand(cv::Mat src, std::vector<cv::Mat>& difference_bb_vec, std::vector<std::array<int, 4>> bound_boxes);
 	void difference_from_center_hand_label(cv::Mat src, std::vector<cv::Mat>& difference_bb_vec, std::vector<std::array<int, 4>> bound_boxes, std::vector<int>& class_labels);
 	void treshold_difference(std::vector<cv::Mat>& difference_bb_vec, std::vector<cv::Mat>& treshold_bb_vec);
 	float compute_pixel_accuracy(cv::Mat mask, cv::Mat ground_th);
