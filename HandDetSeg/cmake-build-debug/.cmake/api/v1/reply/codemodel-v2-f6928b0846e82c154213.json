@@ -27,7 +27,7 @@
 					[
 						0
 					],
-					"name" : "HandDetection",
+					"name" : "HandDetSeg",
 					"targetIndexes" : 
 					[
 						0

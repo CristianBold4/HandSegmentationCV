@@ -939,7 +939,7 @@
 				}
 			],
 			"type" : "STATIC",
-			"value" : "HandDetection"
+			"value" : "HandDetSeg"
 		},
 		{
 			"name" : "CMAKE_PROJECT_VERSION",
@@ -1388,6 +1388,42 @@
 			],
 			"type" : "INTERNAL",
 			"value" : "[C:/opencv/build/x86/mingw/install][v4.5.5()]"
+		},
+		{
+			"name" : "HandDetSeg_BINARY_DIR",
+			"properties" : 
+			[
+				{
+					"name" : "HELPSTRING",
+					"value" : "Value Computed by CMake"
+				}
+			],
+			"type" : "STATIC",
+			"value" : "C:/Users/Cristian/Desktop/Università/4 anno/Secondo Semestre/Computer Vision/Final project/github/HandDetSeg/cmake-build-debug"
+		},
+		{
+			"name" : "HandDetSeg_IS_TOP_LEVEL",
+			"properties" : 
+			[
+				{
+					"name" : "HELPSTRING",
+					"value" : "Value Computed by CMake"
+				}
+			],
+			"type" : "STATIC",
+			"value" : "ON"
+		},
+		{
+			"name" : "HandDetSeg_SOURCE_DIR",
+			"properties" : 
+			[
+				{
+					"name" : "HELPSTRING",
+					"value" : "Value Computed by CMake"
+				}
+			],
+			"type" : "STATIC",
+			"value" : "C:/Users/Cristian/Desktop/Università/4 anno/Secondo Semestre/Computer Vision/Final project/github/HandDetSeg"
 		},
 		{
 			"name" : "HandDetection_BINARY_DIR",

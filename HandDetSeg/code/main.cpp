@@ -12,9 +12,14 @@ using namespace cv;
 using namespace std;
 using namespace cv::dnn;
 
+/**
+ * TEST METHOD, to compute average IoU and pixel accuracy on the testset
+ * @param N_IMAGES
+ * @param net_path
+ * @author Riccardo
+ */
 
-
-void compute_testset_performance(int N_IMAGES){
+void compute_testset_performance(int N_IMAGES, string net_path){
 
     float pixel_accuracy_sum=0;
     float IOU_sum=0;
@@ -49,8 +54,7 @@ void compute_testset_performance(int N_IMAGES){
 
         // -- path of the dictionary containing the map id - class
 	    string class_list_path = "hands_labels.names";
-        // -- path of the exported trained model
-	    string net_path = "aug_model.onnx";
+
         string bb_path = "output/out.txt";
 
         Detection det = Detection(class_list_path, net_path);
@@ -102,14 +106,15 @@ void compute_testset_performance(int N_IMAGES){
 int main(int argc, char** argv)
 {
 
-   // compute_testset_performance(20);
-    //waitKey(0);
-
     // -- path of the dictionary containing the map id - class
-	string class_list_path = "hands_labels.names";
+    string class_list_path = "hands_labels.names";
     // -- path of the exported trained model
-	string net_path = "aug_model.onnx";
+    string net_path = "aug_model.onnx";
     string bb_path = "output/out.txt";
+
+
+    // compute_testset_performance(20, net_path);
+    //waitKey(0);
 
 	// -- load input image
 	Mat frame, frame_copy;
@@ -126,6 +131,8 @@ int main(int argc, char** argv)
 	Detection det = Detection(class_list_path, net_path);
 	Segmentation seg;
 
+    //det.compute_avg_IoU_testset(20);
+
     if (argc == 4) {
         // -- detection part
         det.make_detection(frame, argv[2]);
@@ -133,16 +140,16 @@ int main(int argc, char** argv)
         // -- segmentation part
         seg.make_segmentation(frame_copy, bb_path,argv[3]);
     
-    } else {
+    } else if (argc == 2) {
         // -- detection part
         det.make_detection(frame);
         
         // -- segmentation part
         seg.make_segmentation(frame_copy, bb_path);
+    } else {
+        cerr << "Error! Wrong arguments\n";
     }
 
-	//det.make_detection_testset(20);
-	//det.compute_avg_IoU_testset(20);
 
 	// -- show output
 	imshow("Detection", frame);

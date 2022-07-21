@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.0.0)
 set(CMAKE_BUILD_TYPE "")
 
-project(HandDetection VERSION 0.1.0)
+project(HandDetSeg VERSION 0.1.0)
 
 find_package(OpenCV REQUIRED)
 
