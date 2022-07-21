@@ -1,4 +1,4 @@
-#include "../header/Segmentation.h"
+#include "Segmentation.h"
 #include <iostream>
 #include <fstream>
 
@@ -70,7 +70,7 @@ void Segmentation::read_bb_file_label(int src_r, int src_c, string path, vector<
 		int cordinate_counter = 0;
 		array<int, 4> cordinates;
 
-		while (getline(stringstream, parsed,' ')) {
+		while (getline(stringstream, parsed,'	')) {
 			int c = stoi(parsed);
 			if (cordinate_counter < 4) { cordinates[cordinate_counter] = c; /*cout << cordinate_counter << " : " << c << "\n";*/	}
 			else if (cordinate_counter == 4) { labels.push_back(c); }
@@ -98,6 +98,27 @@ void Segmentation::read_bb_file_label(int src_r, int src_c, string path, vector<
 	bb_vector = boxes;
 	class_labels = labels;
 }
+
+
+void Segmentation::get_bb_labels(int src_r, int src_c, std::array<int, 4> ordered_bb[4], std::vector<std::array<int, 4>>& bb_vector, std::vector<int>& class_labels)
+{
+	for (int i = 0; i < 4; i++) {
+		if (ordered_bb[i][0] != -1) {
+			class_labels.push_back(i);
+			array<int, 4> bb;
+			for (int j = 0; j < 4; j++) { bb[j] = ordered_bb[i][j]; }
+			bb_vector.push_back(bb);
+		}
+	}
+
+	//check if the extracted data are valid; if not give an error message and stop execution
+	if (!valid_bb_cordinates(src_r, src_c, bb_vector)) {
+		cout << "the cordinates provided are not consistent with src size";
+		exit(1);
+	}
+}
+
+
 
 /* @brief Returns the cordinates of the given bounding boxes enlarged of a specific quantity of pixels.
 * This method computes and returns the cordinates of the bounding boxes obtained by enlarging each bounding box contained into bb_vector.
@@ -594,6 +615,71 @@ float Segmentation::compute_IOU(cv::Mat mask, cv::Mat ground_th)
 	return IOU;
 }
 
+
+
+/*  @brief Performs segmentation of the given image.
+This method calls in sequence all the necessary methods to perform the segmentation of the give image.
+In particular it exploit the GrabCut algorithm with an initial mask obtained from difference-from-skin computation.
+
+@param src input image where to perform segmentation; after the call it stores the segmented image
+@param bb_label_path
+
+**/
+void Segmentation::make_segmentation(cv::Mat& src, std::string bb_label_path)
+{
+	vector<array<int, 4>> boxes_vec;
+	vector<int> class_labels;
+	vector<Mat> difference_bb_vec;
+	vector<Mat> treshold_bb_vec;
+	Mat  bin_mask, col_mask;
+
+	read_bb_file_label(src.rows, src.cols, bb_label_path, boxes_vec, class_labels);
+	difference_from_center_hand_label(src, difference_bb_vec, boxes_vec, class_labels);
+	treshold_difference(difference_bb_vec, treshold_bb_vec);
+	segmentation_GB_mask(src, col_mask, bin_mask, treshold_bb_vec, boxes_vec, class_labels);
+	apply_mask(src, src, col_mask, false);
+}
+
+/*  @brief Performs segmentation of the given image, and compute its performance.
+This method calls in sequence all the necessary methods to perform the segmentation of the give image.
+In particular it exploit the GrabCut algorithm with an initial mask obtained from difference-from-skin computation.
+It also evaluates the segmentation, by computing the pixel accuracy and IoU metric w.r.t. the given ground truth mask.
+
+@param src input image where to perform segmentation; after the call it stores the segmented image
+@param bb_label_path
+@param gt_mask_path ground truth mask for the segmentation
+
+**/
+void Segmentation::make_segmentation(cv::Mat& src, std::string bb_label_path, std::string gt_mask_path)
+{
+	vector<array<int, 4>> boxes_vec;
+	vector<int> class_labels;
+	vector<Mat> difference_bb_vec;
+	vector<Mat> treshold_bb_vec;
+	Mat  bin_mask, col_mask;
+	Mat gt_mask = imread(gt_mask_path);
+	if (gt_mask.empty()) {
+		cerr << "Error! ground truth mask image is empty\n";
+	}
+	cvtColor(gt_mask, gt_mask, COLOR_BGR2GRAY);
+
+	read_bb_file_label(src.rows, src.cols, bb_label_path, boxes_vec, class_labels);
+	difference_from_center_hand_label(src, difference_bb_vec, boxes_vec, class_labels);
+	treshold_difference(difference_bb_vec, treshold_bb_vec);
+	segmentation_GB_mask(src, col_mask, bin_mask, treshold_bb_vec, boxes_vec, class_labels);
+	apply_mask(src, src, col_mask, false);
+
+	float pixel_accuracy = compute_pixel_accuracy(bin_mask, gt_mask);
+	float IOU = compute_IOU(bin_mask, gt_mask);
+	cout << "\nSegmentation:	PA= " << pixel_accuracy << ";	IOU= " << IOU << "\n";
+
+}
+
+
+
+
+
+
 //DA VERIFICARE SE TENERE
 
 void Segmentation::show_image(Mat to_show, string window_name)
@@ -602,8 +688,6 @@ void Segmentation::show_image(Mat to_show, string window_name)
 	imshow(window_name, to_show);
 	waitKey(0);
 }
-
-
 
 
 
