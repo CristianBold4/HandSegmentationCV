@@ -54,8 +54,8 @@ int main(int argc, char** argv) {
 		//seg.show_image(src_bb, to_string(test_image_num) + ")src_bb");
 	
 		//boxes_vec = seg.get_wide_cordinates(src.rows, src.cols, boxes_vec);
-		//seg.draw_box_image_label(src, src_bb, boxes_vec, class_labels, true);
-		//seg.show_image(src_bb, to_string(test_image_num) + ")src_bb wide");
+		seg.draw_box_image_label(src, src_bb, boxes_vec, class_labels, true);
+		seg.show_image(src_bb, to_string(test_image_num) + ")src_bb wide");
 
 		
 		//Mat gt_segmentation;
@@ -77,14 +77,16 @@ int main(int argc, char** argv) {
 		seg.treshold_difference(difference_bb_vec, treshold_bb_vec);
 		//seg.show_image(bin_mask, to_string(test_indeces[k]) + ") difference tresholded");
 		
-		//seg.segmentation_GB_mask(src, gb_th, bin_mask, treshold_bb_vec, boxes_vec, class_labels);
-		seg.segmentation_GB(src, gb_th, bin_mask, boxes_vec, class_labels);
+		seg.segmentation_GB_mask(src, gb_th, bin_mask, treshold_bb_vec, boxes_vec, class_labels);
+		//seg.segmentation_GB(src, gb_th, bin_mask, boxes_vec, class_labels);
 		//seg.show_image(gb_th,to_string(test_indeces[k]) +") GB mask");
 		//seg.show_image(bin_mask, to_string(test_indeces[k]) + ") bin mask");
 
 		//seg.segmentation_Km(src, gb_th, bin_mask, boxes_vec, class_labels);
 
-		seg.apply_mask(src, gb_th, gb_th, false);
+		//seg.apply_mask(src, gb_th, gb_th, false);
+		addWeighted(src, 1, gb_th, 0.8, 0.0, gb_th);
+
 		seg.show_image(gb_th, to_string(test_indeces[k]) + ") GB-mask segmentation"); 
 
 		cvtColor(gt_mask, gt_mask, COLOR_BGR2GRAY);

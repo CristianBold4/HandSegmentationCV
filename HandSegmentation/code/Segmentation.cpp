@@ -17,7 +17,7 @@ using namespace std;
 @param bb_vector a vector of array, each array containing the cordinates and size of a single bounding boxe
 @return true if the data inside bb_vector are valid; false otherwise
 **/
-bool Segmentation::valid_bb_cordinates(int src_r, int src_c, std::vector<std::array<int, 4>> bb_vector)
+bool Segmentation::valid_bb_cordinates(int src_r, int src_c, const std::vector<std::array<int, 4>>& bb_vector)
 {
 	for (int k = 0; k < bb_vector.size(); k++) {
 		int x = bb_vector[k][0];
@@ -34,7 +34,7 @@ bool Segmentation::valid_bb_cordinates(int src_r, int src_c, std::vector<std::ar
 
 /* @brief Read the txt file that contains the data relative to the bounding boxes and store them into the given vectors.
 * method that parse the txt file that contains the bounding boxes cordinates, sizes and associated class labels. 
-* Each row inside the txt file shound identify a single bounding box and shound be composed of five integer number separated by tab spaces.
+* Each row inside the txt file should identify a single bounding box and should be composed of five integer number separated by spaces.
 * The order of such integer should be : (top-lef corner x cordinate),(top-lef corner y cordinate), (width), (heigth), (class-label).
 * The first 4 value are copied into an array and inserted into bb_vector. The class label is inserted into the corresponding index of class_labels.
 * The method also checks if the txt file is correctly structured and if the first 4 value are valid considering the given source image size. 
@@ -56,10 +56,7 @@ void Segmentation::read_bb_file_label(int src_r, int src_c, string path, vector<
 	ifstream bb_file(path);
 
 	//read each line of the txt file
-	while (getline(bb_file, line)) {
-		//cout << line << "\n";
-		line_vec.push_back(line);
-	}
+	while (getline(bb_file, line)) { line_vec.push_back(line); }
 
 	//read each number inside a line and save it in a specific container
 	//if the file is not structured correctly, give an error message and stop execution
@@ -70,9 +67,9 @@ void Segmentation::read_bb_file_label(int src_r, int src_c, string path, vector<
 		int cordinate_counter = 0;
 		array<int, 4> cordinates;
 
-		while (getline(stringstream, parsed,' ')) {
+		while (getline(stringstream, parsed,'	')) {
 			int c = stoi(parsed);
-			if (cordinate_counter < 4) { cordinates[cordinate_counter] = c; /*cout << cordinate_counter << " : " << c << "\n";*/	}
+			if (cordinate_counter < 4) { cordinates[cordinate_counter] = c; }
 			else if (cordinate_counter == 4) { labels.push_back(c); }
 			else 
 			{
@@ -81,19 +78,17 @@ void Segmentation::read_bb_file_label(int src_r, int src_c, string path, vector<
 			}
 			cordinate_counter++;
 		}
-
 		if (cordinate_counter < 5) {
 			cout << "unable to read bounding box file: less that 4 cordinates: " << cordinate_counter;
 			exit(1);
 		}
 		boxes.push_back(cordinates);
-		
 	}
 
 	//check if the extracted data are valid; if not give an error message and stop execution
 	if (!valid_bb_cordinates(src_r, src_c, boxes)) {
 		cout << "the cordinates provided are not consistent with src size";
-		//exit(1);  //TO MODIFY
+		exit(1); 
 	}
 	bb_vector = boxes;
 	class_labels = labels;
@@ -132,7 +127,7 @@ void Segmentation::get_bb_labels(int src_r, int src_c, std::array<int, 4> ordere
 @return a vector of array, each array containing the cordinates and size of a single enlarged bounding box.
 
 **/
-std::vector<std::array<int, 4>> Segmentation::get_wide_cordinates(int src_r, int src_c, std::vector<std::array<int, 4>>& bb_vector)
+std::vector<std::array<int, 4>> Segmentation::get_wide_cordinates(int src_r, int src_c, const std::vector<std::array<int, 4>>& bb_vector)
 {
 	int delta = 5;
 	vector<array<int, 4>> wide_bb_vector;
@@ -172,7 +167,7 @@ std::vector<std::array<int, 4>> Segmentation::get_wide_cordinates(int src_r, int
 @param labels a vector of int, each element containing the label associated with the corrisponding bounding box in bb_vector.
 @param  show_color_point if set to true allows to visualize the points selected by the method difference_from_center_hand_label to approximate the skin color
 **/
-void Segmentation::draw_box_image_label(cv::Mat src, cv::Mat& dst, std::vector<std::array<int, 4>> bb_vector, std::vector<int> labels, bool show_color_point)
+void Segmentation::draw_box_image_label(const cv::Mat& src, cv::Mat& dst, const std::vector<std::array<int, 4>>& bb_vector, const std::vector<int>& labels, bool show_color_point)
 {
 	dst = src.clone();
 	for (int k = 0; k < bb_vector.size(); k++) {
@@ -204,6 +199,7 @@ If the mask has only
 @param mask the mask to be drawn
 
 **/
+/*
 void Segmentation::apply_mask(cv::Mat src, cv::Mat& dst, cv::Mat mask, bool same_color)
 {
 	Mat mask_copy = mask.clone();
@@ -219,7 +215,7 @@ void Segmentation::apply_mask(cv::Mat src, cv::Mat& dst, cv::Mat mask, bool same
 	}
 	double alpha = 0.5;
 	addWeighted(src, 1, mask_copy, 0.8, 0.0, dst);
-}
+}*/
 
 
 /* @brief Method that performs hand segmentation on the provided image, exploiting K-means clustering.
@@ -242,7 +238,7 @@ void Segmentation::apply_mask(cv::Mat src, cv::Mat& dst, cv::Mat mask, bool same
 @param class_labels a vector of int, each element containing the label associated with the corrisponding bounding box in bb_vector.
 
 **/
-void Segmentation::segmentation_Km(cv::Mat src, cv::Mat& col_mask, cv::Mat& bin_mask, vector<array<int, 4>> bb_vector, std::vector<int> class_labels)
+void Segmentation::segmentation_Km(const cv::Mat& src, cv::Mat& col_mask, cv::Mat& bin_mask, const vector<array<int, 4>>& bb_vector, const std::vector<int>& class_labels)
 {
 	Mat gaus_blurred, src_ycc, labels;
 	col_mask = Mat::zeros(src.rows, src.cols, CV_8UC3);
@@ -314,7 +310,7 @@ void Segmentation::segmentation_Km(cv::Mat src, cv::Mat& col_mask, cv::Mat& bin_
 @param class_labels a vector of int, each element containing the label associated with the corrisponding bounding box in bb_vector.
 
 **/
-void Segmentation::segmentation_GB(cv::Mat src, cv::Mat& col_mask, cv::Mat& bin_mask, vector<array<int, 4>> bb_vector, std::vector<int> class_labels)
+void Segmentation::segmentation_GB(const cv::Mat& src, cv::Mat& col_mask, cv::Mat& bin_mask,const  vector<array<int, 4>>& bb_vector, const std::vector<int>& class_labels)
 {
 	Mat src_ycc;
 	cvtColor(src, src_ycc, COLOR_BGR2YCrCb, 0);
@@ -363,7 +359,7 @@ void Segmentation::segmentation_GB(cv::Mat src, cv::Mat& col_mask, cv::Mat& bin_
 @param bound_boxes vector of arrays containing the cordinates of the bounding boxes.
 @param class_labels a vector of int, each element containing the label associated with the corrisponding bounding box in bb_vector.
 **/
-void Segmentation::segmentation_GB_mask(cv::Mat src, cv::Mat& col_mask, cv::Mat& mask, std::vector<cv::Mat>& mask_vec, std::vector<std::array<int, 4>> bound_boxes, std::vector<int> class_labels)
+void Segmentation::segmentation_GB_mask(const cv::Mat& src, cv::Mat& col_mask, cv::Mat& mask, const std::vector<cv::Mat>& mask_vec,const  std::vector<std::array<int, 4>>& bound_boxes, const std::vector<int>& class_labels)
 {
 	Mat src_ycc;
 	Mat out_mask = Mat::zeros(src.rows, src.cols, CV_8UC1);
@@ -444,7 +440,7 @@ The skin color is aproximated by considering the color value of the central pixe
 @param bound_boxes vector of arrays containing the cordinates of the bounding boxes
 
 **/
-void Segmentation::difference_from_center_hand(cv::Mat src, std::vector<Mat>& difference_bb_vec, std::vector<std::array<int, 4>> bound_boxes)
+void Segmentation::difference_from_center_hand(const cv::Mat& src, std::vector<Mat>& difference_bb_vec, const std::vector<std::array<int, 4>>& bound_boxes)
 {
 	Mat difference, src_ycc;
 	cvtColor(src, src_ycc, COLOR_BGR2YCrCb, 0);
@@ -491,7 +487,7 @@ void Segmentation::difference_from_center_hand(cv::Mat src, std::vector<Mat>& di
 @param class_labels a vector of int, with the same size of bound_boxes, containing the class label associated with each bounding box.
 
 **/
-void Segmentation::difference_from_center_hand_label(cv::Mat src, std::vector<Mat>& difference_bb_vec, std::vector<std::array<int, 4>> bound_boxes, std::vector<int>& class_labels)
+void Segmentation::difference_from_center_hand_label(const cv::Mat& src, std::vector<cv::Mat>& difference_bb_vec, const std::vector<std::array<int, 4>>& bound_boxes, const std::vector<int>& class_labels)
 {
 	Mat difference, src_ycc;
 	cvtColor(src, src_ycc, COLOR_BGR2YCrCb, 0);
@@ -549,7 +545,7 @@ void Segmentation::difference_from_center_hand_label(cv::Mat src, std::vector<Ma
 @param bound_boxes vector of arrays containing the cordinates of the bounding boxes
 
 **/
-void Segmentation::treshold_difference(std::vector<cv::Mat>& difference_bb_vec, std::vector<cv::Mat>& threshold_bb_vec)
+void Segmentation::treshold_difference(const std::vector<cv::Mat>& difference_bb_vec, std::vector<cv::Mat>& threshold_bb_vec)
 {
 	for (int k = 0; k < difference_bb_vec.size(); k++) {
 		Mat roi = difference_bb_vec[k].clone();
@@ -567,7 +563,7 @@ This method evaluates the specified segmentation mask using the pixel accuracy m
 @param ground_th ground truth mask for the segmentation
 
 **/
-float Segmentation::compute_pixel_accuracy(cv::Mat mask, cv::Mat ground_th)
+float Segmentation::compute_pixel_accuracy(const cv::Mat& mask, const cv::Mat& ground_th)
 {
 	float correctly_classified = 0;
 	for (int i = 0; i < mask.rows; i++) {
@@ -587,7 +583,7 @@ This method evaluates the specified segmentation mask using the Intersection Ove
 @param ground_th ground truth mask for the segmentation
 
 **/
-float Segmentation::compute_IOU(cv::Mat mask, cv::Mat ground_th)
+float Segmentation::compute_IOU(const cv::Mat& mask, const cv::Mat& ground_th)
 {
 	float mask_hand = 0;
 	float mask_not_hand = 0;
@@ -635,7 +631,8 @@ void Segmentation::make_segmentation(cv::Mat& src, std::string bb_label_path)
 	difference_from_center_hand_label(src, difference_bb_vec, boxes_vec, class_labels);
 	treshold_difference(difference_bb_vec, treshold_bb_vec);
 	segmentation_GB_mask(src, col_mask, bin_mask, treshold_bb_vec, boxes_vec, class_labels);
-	apply_mask(src, src, col_mask, false);
+	addWeighted(src, 1, col_mask, 0.8, 0.0, src);
+	//apply_mask(src, src, col_mask, false);
 }
 
 /*  @brief Performs segmentation of the given image, and compute its performance.
@@ -665,7 +662,7 @@ void Segmentation::make_segmentation(cv::Mat& src, std::string bb_label_path, st
 	difference_from_center_hand_label(src, difference_bb_vec, boxes_vec, class_labels);
 	treshold_difference(difference_bb_vec, treshold_bb_vec);
 	segmentation_GB_mask(src, col_mask, bin_mask, treshold_bb_vec, boxes_vec, class_labels);
-	apply_mask(src, src, col_mask, false);
+	addWeighted(src, 1, col_mask, 0.8, 0.0, src);
 
 	float pixel_accuracy = compute_pixel_accuracy(bin_mask, gt_mask);
 	float IOU = compute_IOU(bin_mask, gt_mask);
@@ -680,7 +677,7 @@ void Segmentation::make_segmentation(cv::Mat& src, std::string bb_label_path, st
 
 //DA VERIFICARE SE TENERE
 
-void Segmentation::show_image(Mat to_show, string window_name)
+void Segmentation::show_image(const cv::Mat& to_show, const std::string& window_name)
 {
 	namedWindow(window_name, WINDOW_AUTOSIZE);
 	imshow(window_name, to_show);
