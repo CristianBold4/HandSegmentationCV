@@ -84,7 +84,7 @@ void compute_testset_performance(int N_IMAGES, string net_path){
 	   // seg.segmentation_GB_mask(frame_copy, col_mask, bin_mask, treshold_bb_vec, boxes_vec, class_labels);
 	    //seg.segmentation_GB(frame_copy, col_mask, bin_mask, boxes_vec, class_labels);
 	    
-	    seg.apply_mask(frame_copy, frame_copy, col_mask, false);
+	    //seg.apply_mask(frame_copy, frame_copy, col_mask, false);
 	    
 	    float PA = seg.compute_pixel_accuracy(bin_mask, gt_mask);
 	    float IOU = seg.compute_IOU(bin_mask, gt_mask);

@@ -67,7 +67,7 @@ void Segmentation::read_bb_file_label(int src_r, int src_c, string path, vector<
 		int cordinate_counter = 0;
 		array<int, 4> cordinates;
 
-		while (getline(stringstream, parsed,'	')) {
+		while (getline(stringstream, parsed,' ')) {
 			int c = stoi(parsed);
 			if (cordinate_counter < 4) { cordinates[cordinate_counter] = c; }
 			else if (cordinate_counter == 4) { labels.push_back(c); }
