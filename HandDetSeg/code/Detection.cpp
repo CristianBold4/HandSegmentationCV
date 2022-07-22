@@ -31,6 +31,30 @@ Detection::Detection(const std::string &class_list_path, const std::string &net_
 }
 
 /**
+ * Class used to represent a labelled bounding boxes, it includes the vector of coordinates and the class id
+ */
+class Detection::bbox {
+public:
+    array<int, 4> coordinates{};
+    int cid;
+
+    bbox(array<int, 4> coordinates, int cid){
+        this->coordinates = coordinates;
+        this->cid = cid;
+    }
+};
+
+/**
+ * Class used for the comparator of the priority queue
+ */
+class Detection::Compare {
+public:
+    bool operator() (bbox b1, bbox b2)  {
+        return (b1.cid > b2.cid);
+    }
+};
+
+/**
  * Draw the bounding box with the label of the class of the hand
  * @param input_image
  * @param label to be displayed
@@ -80,33 +104,14 @@ vector<Mat> Detection::pre_process(Mat &input_image) {
 	return outputs;
 }
 
-class Detection::bbox {
-    public:
-        array<int, 4> coordinates{};
-        int cid;
-
-        bbox(array<int, 4> coordinates, int cid){
-            this->coordinates = coordinates;
-            this->cid = cid;
-        }
-};
-
-class Detection::Compare {
-    public:
-        bool operator() (bbox b1, bbox b2)  {
-            return (b1.cid > b2.cid);
-        }
-};
-
 
 /**
  * Method to post_process the bounding boxes vector obtained from the forward step. Iterate through the dimension of the
  * trained model's output (i.e. 25200 x 9) and search for the predicted bounding boxes, discarding those ones which have
- * a confidence and score below a fixed threshold, performing a Non-Maxima Suppression of the boxes. The array<int,4> of
- * 4 elements represents the bounding boxes coordinates in the prearranged order of myleft, myright, yourleft, yourright
- * hand class, in order to provide a standard fixed output order and perform comparison and compute statistics and
- * performance if necessary. If that given hand is not present, it has -1 as standard left coordinate and so the program
- * will discard that cell.
+ * a confidence and score below a fixed threshold, performing a Non-Maxima Suppression of the boxes. In order to provide
+ * a standard fixed output order and perform comparison and compute statistics and performance if necessary, a priority
+ * queue with dedicated class and comparator is used. The standard prearranged increasing order is myleft, myright,
+ * yourleft, yourright. Finally, the priority queue is popped and its elements are filled into a simpler vector.
  * @param input_image
  * @param outputs, the detection vector of images
  * @param class_name, the vector of string mapped for the classes
@@ -158,8 +163,8 @@ void Detection::post_process(Mat &input_image, vector<Mat> &outputs, const vecto
                 float w = data[2];
                 float h = data[3];
                 // -- Bounding box coordinates.
-                int left = int((cx - 0.5 * w) * x_factor);
-                int top = int((cy - 0.5 * h) * y_factor);
+                int left = max(0, int((cx - 0.5 * w) * x_factor));
+                int top = max(0, int((cy - 0.5 * h) * y_factor));
                 int width = min(int(w * x_factor), input_image.cols);
                 int height = min(int(h * y_factor), input_image.rows);
                 // -- Store good detections in the boxes vector.
@@ -231,12 +236,14 @@ void Detection::write_output(vector<bbox> &pred_boxes) {
     outfile.close();
 }
 
-/**
- * Method that aggregates all the class methods and make the detection given the input frame, returning the same frame
- * with the bounding boxes and class labels drawn.
- * @param frame
- */
-void Detection::make_detection(cv::Mat &frame) {
+ /**
+  * Method that aggregates all the class methods and make the detection given the input frame, returning the same frame
+  * with the bounding boxes and class labels drawn.
+  * @param frame
+  * @param bb_coordinates
+  * @param classes
+  */
+void Detection::make_detection(cv::Mat &frame, vector<array<int, 4>> & bb_coordinates, vector<int> &classes) {
 
     vector<Mat> detections;
     detections = pre_process(frame);
@@ -256,6 +263,12 @@ void Detection::make_detection(cv::Mat &frame) {
 
     // -- write the output
     write_output(pred_boxes);
+
+    // -- fill reference params
+    for (int i = 0; i < pred_boxes.size(); i++) {
+        bb_coordinates.push_back(pred_boxes[i].coordinates);
+        classes.push_back(pred_boxes[i].cid);
+    }
 
 }
 
@@ -383,8 +396,10 @@ string Detection::compute_IoU(vector<bbox> &pred_boxes_vec, vector<array<int, 4>
  * between the predicted and truth boxes
  * @param frame
  * @param ground_truth_path
+ * @param bb_coordinates
+ * @param classes
  */
-void Detection::make_detection(cv::Mat &frame, const std::string& ground_truth_path) {
+void Detection::make_detection(cv::Mat &frame, const std::string& ground_truth_path, std::vector<std::array<int, 4>> & bb_coordinates, std::vector<int> &classes) {
     vector<Mat> detections;
     detections = pre_process(frame);
 
@@ -398,6 +413,8 @@ void Detection::make_detection(cv::Mat &frame, const std::string& ground_truth_p
     post_process(frame, detections, class_list, pred_boxes);
     IoU = compute_IoU(pred_boxes, gr_boxes_vec);
 
+
+
     // -- Put efficiency information.
     // -- The function getPerfProfile returns the overall time for inference(t) and the timings for each of the layers(in layersTimes)
 
@@ -410,6 +427,12 @@ void Detection::make_detection(cv::Mat &frame, const std::string& ground_truth_p
 
     // -- write the output
     write_output(pred_boxes);
+
+    // -- fill reference params
+    for (int i = 0; i < pred_boxes.size(); i++) {
+        bb_coordinates.push_back(pred_boxes[i].coordinates);
+        classes.push_back(pred_boxes[i].cid);
+    }
 
 }
 

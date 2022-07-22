@@ -131,18 +131,21 @@ int main(int argc, char** argv)
 	Detection det = Detection(class_list_path, net_path);
 	Segmentation seg;
 
-    det.compute_avg_IoU_testset(20);
+    //det.compute_avg_IoU_testset(20);
+
+    vector<array<int, 4>> bb_coordinates;
+    vector<int> classes;
 
     if (argc == 4) {
         // -- detection part
-        det.make_detection(frame, argv[2]);
+        det.make_detection(frame, argv[2], bb_coordinates, classes);
         
         // -- segmentation part
         seg.make_segmentation(frame_copy, bb_path,argv[3]);
     
     } else if (argc == 2) {
         // -- detection part
-        det.make_detection(frame);
+        det.make_detection(frame, bb_coordinates, classes);
         
         // -- segmentation part
         seg.make_segmentation(frame_copy, bb_path);

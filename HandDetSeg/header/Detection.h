@@ -24,6 +24,9 @@ class Detection {
         cv::dnn::Net net;
         std::vector<std::string> class_list;
 
+        class bbox;
+        class Compare;
+
     public:
 
         // -- Text parameters.
@@ -56,13 +59,10 @@ class Detection {
 
         std::vector<cv::Mat> pre_process(cv::Mat &input_image);
 
-        class bbox;
-        class Compare;
-
         void post_process(cv::Mat &input_image, std::vector<cv::Mat> &outputs, const std::vector<std::string> &class_name,
                       std::vector<bbox> &pred_boxes) const;
 
-        void make_detection(cv::Mat &frame);
+        void make_detection(cv::Mat &frame, std::vector<std::array<int, 4>> & bb_coordinates, std::vector<int> &classes);
 
         static void write_output(std::vector<bbox> &pred_boxes);
 
@@ -70,7 +70,7 @@ class Detection {
         ------- TEST METHODS -------
         **/
 
-        void read_bb_file(const std::string& path, std::vector<std::array<int, 4>> &bb_vector);
+        static void read_bb_file(const std::string& path, std::vector<std::array<int, 4>> &bb_vector);
 
         std::string compute_IoU(std::vector<bbox> &pred_boxes_vec, std::vector<std::array<int,4>> gr_boxes_vec);
 
@@ -78,7 +78,7 @@ class Detection {
 
         void compute_avg_IoU_testset(int N_IMAGES);
 
-        void make_detection(cv::Mat &frame, const std::string& ground_truth_path);
+        void make_detection(cv::Mat &frame, const std::string& ground_truth_path, std::vector<std::array<int, 4>> & bb_coordinates, std::vector<int> &classes);
 
 
 
