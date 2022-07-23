@@ -60,12 +60,14 @@ void compute_testset_performance(int N_IMAGES, string net_path){
         Detection det = Detection(class_list_path, net_path);
 	    Segmentation seg;
 	    
+	     vector<array<int, 4>> bb_coordinates;
+         vector<int> classes;
+	    
 	    // -- DETECTION
-        det.make_detection(frame);
+         det.make_detection(frame, bb_coordinates, classes);
         
         // -- SEGMENTATION
-        vector<array<int, 4>> boxes_vec;
-	    vector<int> class_labels;
+       
 	    vector<Mat> difference_bb_vec;
 	    vector<Mat> treshold_bb_vec;
 	    Mat  bin_mask, col_mask;
@@ -75,15 +77,15 @@ void compute_testset_performance(int N_IMAGES, string net_path){
 	    }
 	    cvtColor(gt_mask, gt_mask, COLOR_BGR2GRAY);
 
-	    seg.read_bb_file_label(frame_copy.rows, frame_copy.cols, bb_path, boxes_vec, class_labels);
-	    if(j==16) { boxes_vec[1][2] = boxes_vec[1][2]-1;  } //fix img 16
-	    seg.segmentation_Km(frame_copy,col_mask, bin_mask, boxes_vec, class_labels);
-	    //seg.difference_from_center_hand_label(frame_copy, difference_bb_vec, boxes_vec, class_labels);
-	    //seg.difference_from_center_hand(frame_copy, difference_bb_vec, boxes_vec);
-	    //seg.treshold_difference(difference_bb_vec, treshold_bb_vec);
-	   // seg.segmentation_GB_mask(frame_copy, col_mask, bin_mask, treshold_bb_vec, boxes_vec, class_labels);
-	    //seg.segmentation_GB(frame_copy, col_mask, bin_mask, boxes_vec, class_labels);
-	    
+	   
+        if(j==16) { bb_coordinates[1][2] = bb_coordinates[1][2]-1;  } //fix img 16
+        // seg.segmentation_Km(frame_copy,col_mask, bin_mask, boxes_vec, class_labels);
+        seg.difference_from_center_hand_label(frame_copy, difference_bb_vec, bb_coordinates, classes);
+        //seg.difference_from_center_hand(frame_copy, difference_bb_vec, boxes_vec);
+        seg.treshold_difference(difference_bb_vec, treshold_bb_vec);
+        seg.segmentation_GB_mask(frame_copy, col_mask, bin_mask, treshold_bb_vec, bb_coordinates, classes);
+        //seg.segmentation_GB(frame_copy, col_mask, bin_mask, boxes_vec, class_labels);
+
 	    //seg.apply_mask(frame_copy, frame_copy, col_mask, false);
 	    
 	    float PA = seg.compute_pixel_accuracy(bin_mask, gt_mask);
@@ -113,7 +115,7 @@ int main(int argc, char** argv)
     string bb_path = "output/out.txt";
 
 
-    // compute_testset_performance(20, net_path);
+    //compute_testset_performance(20, net_path);
     //waitKey(0);
 
 	// -- load input image
@@ -141,14 +143,15 @@ int main(int argc, char** argv)
         det.make_detection(frame, argv[2], bb_coordinates, classes);
         
         // -- segmentation part
-        seg.make_segmentation(frame_copy, bb_path,argv[3]);
+        seg.make_segmentation(frame_copy, bb_coordinates, classes,argv[3]);
     
     } else if (argc == 2) {
         // -- detection part
         det.make_detection(frame, bb_coordinates, classes);
+        //cout<< bb_coordinates[1][0]<< ";  " << bb_coordinates[1][2]<<"\n";
         
         // -- segmentation part
-        seg.make_segmentation(frame_copy, bb_path);
+        seg.make_segmentation(frame_copy, bb_coordinates, classes);
     } else {
         cerr << "Error! Wrong arguments\n";
     }

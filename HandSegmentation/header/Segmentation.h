@@ -30,8 +30,8 @@ public:
 	float compute_IOU(const cv::Mat& mask, const cv::Mat& ground_th);
 	void show_image(const cv::Mat& to_show, const std::string& window_name);
 	
-	void make_segmentation( cv::Mat& src, std::string bb_label_path);
-	void make_segmentation( cv::Mat& src, std::string bb_label_path, std::string gt_mask_path);
+	void make_segmentation( cv::Mat& src,const std::vector<std::array<int, 4>>& bound_boxes, const std::vector<int>& class_labels);
+	void make_segmentation( cv::Mat& src, const std::vector<std::array<int, 4>>& bound_boxes, const std::vector<int>& class_labels, std::string gt_mask_path);
 
 
 	//void draw_box_image(cv::Mat src, cv::Mat& dst, std::vector<std::array<int, 4>> bound_boxes);

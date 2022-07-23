@@ -165,8 +165,8 @@ void Detection::post_process(Mat &input_image, vector<Mat> &outputs, const vecto
                 // -- Bounding box coordinates.
                 int left = max(0, int((cx - 0.5 * w) * x_factor));
                 int top = max(0, int((cy - 0.5 * h) * y_factor));
-                int width = min(int(w * x_factor), input_image.cols);
-                int height = min(int(h * y_factor), input_image.rows);
+                int width = min(int(w * x_factor), input_image.cols - left);
+                int height = min(int(h * y_factor), input_image.rows- top);
                 // -- Store good detections in the boxes vector.
                 boxes.push_back(Rect(left, top, width, height));
             }
@@ -222,13 +222,13 @@ void Detection::post_process(Mat &input_image, vector<Mat> &outputs, const vecto
  */
 void Detection::write_output(vector<bbox> &pred_boxes) {
 
-    ofstream outfile("./output/out.txt");
+    ofstream outfile("./output/det.txt");
 
     // write ordered output
     for (auto & bb : pred_boxes) {
         //write the output with class id
         outfile << bb.coordinates[0] << " " << bb.coordinates[1] << " " <<
-                bb.coordinates[2] << " " << bb.coordinates [3] << " " << bb.cid << " " << "\n";
+                bb.coordinates[2] << " " << bb.coordinates [3] <<"\n";
 
 
     }

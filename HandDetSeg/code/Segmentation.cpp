@@ -619,20 +619,17 @@ In particular it exploit the GrabCut algorithm with an initial mask obtained fro
 @param bb_label_path
 
 **/
-void Segmentation::make_segmentation(cv::Mat& src, std::string bb_label_path)
+void Segmentation::make_segmentation(cv::Mat& src, const std::vector<std::array<int, 4>>& bound_boxes, const std::vector<int>& class_labels)
 {
-	vector<array<int, 4>> boxes_vec;
-	vector<int> class_labels;
 	vector<Mat> difference_bb_vec;
 	vector<Mat> treshold_bb_vec;
 	Mat  bin_mask, col_mask;
 
-	read_bb_file_label(src.rows, src.cols, bb_label_path, boxes_vec, class_labels);
-	difference_from_center_hand_label(src, difference_bb_vec, boxes_vec, class_labels);
+	difference_from_center_hand_label(src, difference_bb_vec, bound_boxes, class_labels);
 	treshold_difference(difference_bb_vec, treshold_bb_vec);
-	segmentation_GB_mask(src, col_mask, bin_mask, treshold_bb_vec, boxes_vec, class_labels);
+	segmentation_GB_mask(src, col_mask, bin_mask, treshold_bb_vec, bound_boxes, class_labels);
 	addWeighted(src, 1, col_mask, 0.8, 0.0, src);
-	//apply_mask(src, src, col_mask, false);
+	imwrite("./output/bin_mask.png", bin_mask);
 }
 
 /*  @brief Performs segmentation of the given image, and compute its performance.
@@ -645,10 +642,8 @@ It also evaluates the segmentation, by computing the pixel accuracy and IoU metr
 @param gt_mask_path ground truth mask for the segmentation
 
 **/
-void Segmentation::make_segmentation(cv::Mat& src, std::string bb_label_path, std::string gt_mask_path)
+void Segmentation::make_segmentation(cv::Mat& src, const std::vector<std::array<int, 4>>& bound_boxes, const std::vector<int>& class_labels, std::string gt_mask_path)
 {
-	vector<array<int, 4>> boxes_vec;
-	vector<int> class_labels;
 	vector<Mat> difference_bb_vec;
 	vector<Mat> treshold_bb_vec;
 	Mat  bin_mask, col_mask;
@@ -658,11 +653,11 @@ void Segmentation::make_segmentation(cv::Mat& src, std::string bb_label_path, st
 	}
 	cvtColor(gt_mask, gt_mask, COLOR_BGR2GRAY);
 
-	read_bb_file_label(src.rows, src.cols, bb_label_path, boxes_vec, class_labels);
-	difference_from_center_hand_label(src, difference_bb_vec, boxes_vec, class_labels);
+	difference_from_center_hand_label(src, difference_bb_vec, bound_boxes, class_labels);
 	treshold_difference(difference_bb_vec, treshold_bb_vec);
-	segmentation_GB_mask(src, col_mask, bin_mask, treshold_bb_vec, boxes_vec, class_labels);
+	segmentation_GB_mask(src, col_mask, bin_mask, treshold_bb_vec, bound_boxes, class_labels);
 	addWeighted(src, 1, col_mask, 0.8, 0.0, src);
+	imwrite("./output/bin_mask.png", bin_mask);
 
 	float pixel_accuracy = compute_pixel_accuracy(bin_mask, gt_mask);
 	float IOU = compute_IOU(bin_mask, gt_mask);

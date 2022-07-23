@@ -145,7 +145,7 @@ CMAKE_PROJECT_DESCRIPTION:STATIC=
 CMAKE_PROJECT_HOMEPAGE_URL:STATIC=
 
 //Value Computed by CMake
-CMAKE_PROJECT_NAME:STATIC=HandDetection
+CMAKE_PROJECT_NAME:STATIC=HandDetSeg
 
 //Value Computed by CMake
 CMAKE_PROJECT_VERSION:STATIC=0.1.0
@@ -225,10 +225,10 @@ CMAKE_STRIP:FILEPATH=/usr/bin/strip
 CMAKE_VERBOSE_MAKEFILE:BOOL=FALSE
 
 //Value Computed by CMake
-HandDetection_BINARY_DIR:STATIC=/home/local/bellric97090/desktop/cvproject/handdetseg/build
+HandDetSeg_BINARY_DIR:STATIC=/home/local/bellric97090/desktop/cvproject/handdetseg/build
 
 //Value Computed by CMake
-HandDetection_SOURCE_DIR:STATIC=/home/local/bellric97090/desktop/cvproject/handdetseg
+HandDetSeg_SOURCE_DIR:STATIC=/home/local/bellric97090/desktop/cvproject/handdetseg
 
 //The directory containing a CMake configuration file for OpenCV.
 OpenCV_DIR:PATH=/usr/local/lib/cmake/opencv4
