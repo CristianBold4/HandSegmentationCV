@@ -78,7 +78,7 @@ void compute_testset_performance(int N_IMAGES, string net_path){
 	    cvtColor(gt_mask, gt_mask, COLOR_BGR2GRAY);
 
 	   
-        if(j==16) { bb_coordinates[1][2] = bb_coordinates[1][2]-1;  } //fix img 16
+       // if(j==16) { bb_coordinates[1][2] = bb_coordinates[1][2]-1;  } //fix img 16
         // seg.segmentation_Km(frame_copy,col_mask, bin_mask, boxes_vec, class_labels);
         seg.difference_from_center_hand_label(frame_copy, difference_bb_vec, bb_coordinates, classes);
         //seg.difference_from_center_hand(frame_copy, difference_bb_vec, boxes_vec);
@@ -105,6 +105,7 @@ void compute_testset_performance(int N_IMAGES, string net_path){
 }
 
 
+
 int main(int argc, char** argv)
 {
 
@@ -113,10 +114,6 @@ int main(int argc, char** argv)
     // -- path of the exported trained model
     string net_path = "aug_model.onnx";
     string bb_path = "output/out.txt";
-
-
-    //compute_testset_performance(20, net_path);
-    //waitKey(0);
 
 	// -- load input image
 	Mat frame, frame_copy;
@@ -129,16 +126,16 @@ int main(int argc, char** argv)
 	    return -1;
 	}
 
-
 	Detection det = Detection(class_list_path, net_path);
 	Segmentation seg;
-
-    //det.compute_avg_IoU_testset(20);
 
     vector<array<int, 4>> bb_coordinates;
     vector<int> classes;
 
+    // -- if requested performs detection and segmentation and compute performance metrics;
+    // -- otherwise only performs detection and segmentation
     if (argc == 4) {
+
         // -- detection part
         det.make_detection(frame, argv[2], bb_coordinates, classes);
         
@@ -146,18 +143,19 @@ int main(int argc, char** argv)
         seg.make_segmentation(frame_copy, bb_coordinates, classes,argv[3]);
     
     } else if (argc == 2) {
+
         // -- detection part
         det.make_detection(frame, bb_coordinates, classes);
-        //cout<< bb_coordinates[1][0]<< ";  " << bb_coordinates[1][2]<<"\n";
-        
+               
         // -- segmentation part
         seg.make_segmentation(frame_copy, bb_coordinates, classes);
+    
     } else {
         cerr << "Error! Wrong arguments\n";
     }
 
 
-	// -- show output
+	// -- show and save output
 	imshow("Detection", frame);
 	waitKey(0);
 	imwrite("detection.jpg", frame);
