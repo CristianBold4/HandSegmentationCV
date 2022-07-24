@@ -144,7 +144,6 @@ CMakeFiles/main.dir/code/Segmentation.cpp.o
  /usr/local/include/opencv4/opencv2/imgproc/segmentation.hpp
  /usr/local/include/opencv4/opencv2/opencv_modules.hpp
  /usr/local/include/opencv4/opencv2/videoio.hpp
- /usr/local/include/opencv4/opencv2/ximgproc/lsc.hpp
 CMakeFiles/main.dir/code/main.cpp.o
  /home/local/bellric97090/desktop/cvproject/handdetseg/code/main.cpp
  /home/local/bellric97090/desktop/cvproject/handdetseg/header/Detection.h

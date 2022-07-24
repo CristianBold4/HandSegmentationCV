@@ -283,20 +283,20 @@ void Segmentation::segmentation_GB_mask(const cv::Mat& src, cv::Mat& col_mask, c
 				if (label_mask.at<unsigned char>(i, j) == GC_PR_FGD || label_mask.at<unsigned char>(i, j) == GC_FGD) {
 					segmentation_present = true;
 					out_mask.at<unsigned char>(i, j) = 255;
-					colors[class_labels[k]] * 0.3;				
+					col_mask.at<Vec3b>(i, j) = colors[class_labels[k]] * 0.3;				
 				}
 			}
 		}
 		
 		//if Grabcut did not label any pixel of a small BB as foreground use the provided initial mask as output mask
-		if (!segmentation_present && ( (h*w)<(src.rows*src.cols/10) )  ) {
+		if (!segmentation_present && ( (h*w)<(src.rows*src.cols/5) )  ) {
 			Mat dst_roi(col_mask(Rect(x, y, w, h)));
 			Mat out_mask_roi(out_mask(Rect(x, y, w, h)));
 
 			for (int i = 0; i < dst_roi.rows; i++) {
 				for (int j = 0; j < dst_roi.cols; j++) {
 					if (mask_roi.at<unsigned char>(i, j) == 255) {
-						colors[class_labels[k]] * 0.3;
+						dst_roi.at<Vec3b>(i, j) = colors[class_labels[k]] * 0.3;
 						out_mask_roi.at<unsigned char>(i, j) = 255;
 					}
 				}
@@ -557,6 +557,6 @@ void Segmentation::make_segmentation(cv::Mat& src, const std::vector<std::array<
 
 	float pixel_accuracy = compute_pixel_accuracy(bin_mask, gt_mask);
 	float IOU = compute_IOU(bin_mask, gt_mask);
-	cout << "\nSegmentation:	PA= " << pixel_accuracy << ";	IOU= " << IOU << "\n";
+	cout << "PA= " << pixel_accuracy << ";	IOU= " << IOU << "\n";
 
 }

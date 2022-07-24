@@ -1,0 +1,44 @@
+TEST 2 - Grabcut with difference mask (1 skin point)
+
+img 1   PA= 0.988234;	IOU= 0.877875
+
+img 2   PA= 0.995094;	IOU= 0.929865
+
+img 3   PA= 0.995399;	IOU= 0.933942
+
+img 4   PA= 0.995978;	IOU= 0.923444
+
+img 5   PA= 0.991482;	IOU= 0.906168
+
+img 6   PA= 0.985224;	IOU= 0.900437
+
+img 7   PA= 0.988661;	IOU= 0.938574
+
+img 8   PA= 0.983996;	IOU= 0.854019
+
+img 9   PA= 0.992687;	IOU= 0.827781
+
+img 10   PA= 0.994276;	IOU= 0.915005
+
+img 11   PA= 0.988189;	IOU= 0.884985
+
+img 12   PA= 0.970255;	IOU= 0.880828
+
+img 13   PA= 0.977603;	IOU= 0.838203
+
+img 14   PA= 0.982249;	IOU= 0.91004
+
+img 15   PA= 0.983531;	IOU= 0.843063
+
+img 16   PA= 0.953714;	IOU= 0.83622
+
+img 17   PA= 0.983329;	IOU= 0.908676
+
+img 18   PA= 0.95374;	IOU= 0.86367
+
+img 19   PA= 0.973414;	IOU= 0.84855
+
+img 20   PA= 0.99202;	IOU= 0.925359
+
+
+Segmentation:	avg_PA= 0.983454;	avg_IOU= 0.887335

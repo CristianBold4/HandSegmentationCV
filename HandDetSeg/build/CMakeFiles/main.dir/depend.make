@@ -143,7 +143,6 @@ CMakeFiles/main.dir/code/Segmentation.cpp.o: /usr/local/include/opencv4/opencv2/
 CMakeFiles/main.dir/code/Segmentation.cpp.o: /usr/local/include/opencv4/opencv2/imgproc/segmentation.hpp
 CMakeFiles/main.dir/code/Segmentation.cpp.o: /usr/local/include/opencv4/opencv2/opencv_modules.hpp
 CMakeFiles/main.dir/code/Segmentation.cpp.o: /usr/local/include/opencv4/opencv2/videoio.hpp
-CMakeFiles/main.dir/code/Segmentation.cpp.o: /usr/local/include/opencv4/opencv2/ximgproc/lsc.hpp
 
 CMakeFiles/main.dir/code/main.cpp.o: ../code/main.cpp
 CMakeFiles/main.dir/code/main.cpp.o: ../header/Detection.h

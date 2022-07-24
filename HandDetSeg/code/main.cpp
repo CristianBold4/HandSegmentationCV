@@ -114,7 +114,7 @@ int main(int argc, char** argv)
     // -- path of the exported trained model
     string net_path = "aug_model.onnx";
     string bb_path = "output/out.txt";
-
+    
 	// -- load input image
 	Mat frame, frame_copy;
 	string img_path = argv[1];
@@ -126,6 +126,7 @@ int main(int argc, char** argv)
 	    return -1;
 	}
 
+
 	Detection det = Detection(class_list_path, net_path);
 	Segmentation seg;
 
@@ -135,11 +136,13 @@ int main(int argc, char** argv)
     // -- if requested performs detection and segmentation and compute performance metrics;
     // -- otherwise only performs detection and segmentation
     if (argc == 4) {
-
+         
         // -- detection part
+        cout << "DETECTION RESULTS:\n";
         det.make_detection(frame, argv[2], bb_coordinates, classes);
         
         // -- segmentation part
+        cout << "\nSEGMENTATION RESULTS:\n";
         seg.make_segmentation(frame_copy, bb_coordinates, classes,argv[3]);
     
     } else if (argc == 2) {
