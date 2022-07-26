@@ -164,7 +164,7 @@ void Segmentation::segmentation_Km(const cv::Mat& src, cv::Mat& col_mask, cv::Ma
 			for (int j = 0; j < roi.cols; j++) {
 				int label = labels.at<int>(i * roi.cols + j);
 				if (label == labels.at<int>((roi.rows / 2 * roi.cols) + (roi.cols / 2))) {
-					colors[class_labels[l]] * 0.3;
+					roi.at<Vec3b>(i, j) = colors[class_labels[l]] * 0.3;
 					roi_mask.at<unsigned char>(i, j) = 255;
 				}
 			}
