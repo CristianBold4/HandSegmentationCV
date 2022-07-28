@@ -1,3 +1,0 @@
-C:/Users/Cristian/Desktop/Università/4 anno/Secondo Semestre/Computer Vision/Final project/github/HandSegmentation/cmake-build-debug/CMakeFiles/HandSegmentation.dir
-C:/Users/Cristian/Desktop/Università/4 anno/Secondo Semestre/Computer Vision/Final project/github/HandSegmentation/cmake-build-debug/CMakeFiles/edit_cache.dir
-C:/Users/Cristian/Desktop/Università/4 anno/Secondo Semestre/Computer Vision/Final project/github/HandSegmentation/cmake-build-debug/CMakeFiles/rebuild_cache.dir
