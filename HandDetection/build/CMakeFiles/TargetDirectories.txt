@@ -1,3 +1,0 @@
-/home/local/boldcri21288/Desktop/CVproject-main/HandDetection/build/CMakeFiles/rebuild_cache.dir
-/home/local/boldcri21288/Desktop/CVproject-main/HandDetection/build/CMakeFiles/edit_cache.dir
-/home/local/boldcri21288/Desktop/CVproject-main/HandDetection/build/CMakeFiles/main.dir
