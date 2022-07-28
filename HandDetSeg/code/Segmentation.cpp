@@ -32,40 +32,6 @@ bool Segmentation::valid_bb_cordinates(int src_r, int src_c, const std::vector<s
 
 
 
-/* @brief Returns the coordinates of the given bounding boxes enlarged of a specific quantity of pixels.
-* This method computes and returns the coordinates of the bounding boxes obtained by enlarging each bounding box contained into bb_vector.
-* Each bounding box is enlarged by adding a given quantity of rows or columns on each side of the box.
-* If the enlarged box is not completely contained into the source image the original cordinates are returned.
-* A single bounding box is identified by an array of 4 int: top-lef corner x cordinate, top-lef corner y cordinate, width and height.
-* 
-@param src_r the number of rows of the image that should contain the bounding boxes
-@param src_c the number of columns of the image that should contain the bounding boxes
-@param bb_vector a vector of array, each array containing the cordinates and size of a single original bounding box
-@return a vector of array, each array containing the coordinates and size of a single enlarged bounding box.
-
-**/
-std::vector<std::array<int, 4>> Segmentation::get_wide_cordinates(int src_r, int src_c, const std::vector<std::array<int, 4>>& bb_vector)
-{
-	int delta = 5;
-	vector<array<int, 4>> wide_bb_vector;
-
-	for (int k = 0; k < bb_vector.size(); k++) {
-		int x = bb_vector[k][0];
-		int y = bb_vector[k][1];
-		int w = bb_vector[k][2];
-		int h = bb_vector[k][3];
-		
-		//compute wide cordinates
-		array<int, 4> wide_bb = { x - delta, y - delta, w + delta*2, h + delta*2 };
-		vector<std::array<int, 4>> check_vec = { wide_bb };
-		//if wide cordinates are valid use them; otherwise use original cordinates
-		if (valid_bb_cordinates(src_r, src_c, check_vec)) {	wide_bb_vector.push_back(wide_bb); }
-		else { wide_bb_vector.push_back(bb_vector[k]); }
-	}
-	return wide_bb_vector;	
-}
-
-
 /*@brief Draws the specified bounding boxes into the provided image, with colors based on labels.
 * This method draws the bounding boxes specified in bb_vector into the image provided by src and save the result into dst. 
 * A single bounding box is identified by an array of 4 int: top-lef corner x coordinate, top-lef corner y coordinate, width and height.
@@ -347,7 +313,7 @@ void Segmentation::difference_from_center_hand(const cv::Mat& src, std::vector<M
 			}
 		}
 		difference_bb_vec.push_back(difference_bb);
-		//show_image(difference_bb*5, to_string(k));
+
 	}
 }
 

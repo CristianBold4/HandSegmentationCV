@@ -19,7 +19,6 @@ private:
 
 public:
 	
-	std::vector<std::array<int, 4>> get_wide_cordinates(int src_r, int src_c,const std::vector<std::array<int, 4>>& bb_vector);
 	void draw_box_image_label(const cv::Mat& src, cv::Mat& dst, const std::vector<std::array<int, 4>>& bb_vector, const std::vector<int>& labels, bool show_color_point);
 	void segmentation_Km(const cv::Mat& src, cv::Mat& dst, cv::Mat& bin_mask,const std::vector<std::array<int, 4>>& bound_boxes, const std::vector<int>& class_labels);
 	void segmentation_GB(const cv::Mat& src, cv::Mat& dst, cv::Mat& bin_mask, const std::vector<std::array<int, 4>>& bound_boxes, const std::vector<int>& class_labels);
@@ -29,7 +28,6 @@ public:
 	void treshold_difference(const std::vector<cv::Mat>& difference_bb_vec, std::vector<cv::Mat>& treshold_bb_vec);
 	float compute_pixel_accuracy(const cv::Mat& mask,const cv::Mat& ground_th);
 	float compute_IOU(const cv::Mat& mask, const cv::Mat& ground_th);
-	void show_image(const cv::Mat& to_show, const std::string& window_name);
 	
 	void make_segmentation( cv::Mat& src,const std::vector<std::array<int, 4>>& bound_boxes, const std::vector<int>& class_labels);
 	void make_segmentation( cv::Mat& src, const std::vector<std::array<int, 4>>& bound_boxes, const std::vector<int>& class_labels, std::string gt_mask_path);
