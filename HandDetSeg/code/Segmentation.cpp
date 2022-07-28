@@ -557,6 +557,6 @@ void Segmentation::make_segmentation(cv::Mat& src, const std::vector<std::array<
 
 	float pixel_accuracy = compute_pixel_accuracy(bin_mask, gt_mask);
 	float IOU = compute_IOU(bin_mask, gt_mask);
-	cout << "PA= " << pixel_accuracy << ";	IOU= " << IOU << "\n";
+	cout << "PA= " << pixel_accuracy << ";	IoU= " << IOU << "\n";
 
 }
