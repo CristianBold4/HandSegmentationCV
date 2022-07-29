@@ -42,4 +42,5 @@ Outputs a file ```./output/out.txt``` containing bounding boxes coordinates + cl
 ```./build/main input/07.jpg```
 Results:
 <img src="https://github.com/CristianBold4/CVproject/blob/main/HandDetection/output/img.jpg">
+<img src="https://github.com/CristianBold4/CVproject/blob/main/HandSegmentation/seg07.jpg">
 
