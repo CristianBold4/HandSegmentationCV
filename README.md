@@ -22,7 +22,14 @@ Requirements:
 - OpenCV >= 4.5.2
 - GCC compiler
 
-## Execution
+<h1> Methods for Hand Segmentation </h1>
+
+* K-means 
+* Grabcut initialized with Rect
+* Grabcut initialized with Mask (obtained by difference-from-skin computation)
+
+
+<h1>Execution</h1> 
 
 ### CMake C++ Linux
 ```C++ Linux
@@ -31,9 +38,10 @@ cd build
 cmake ..
 cmake --build .
 cd ..
-./build/main path-to-image path-to-ground-truth.txt
+./build/main path-to-image path-to-det-ground-truth.txt path-to-seg-ground-truth-mask.png
 ```
-Outputs a file ```./output/out.txt``` containing bounding boxes coordinates + class of the hand
+Displays and saves the results of the detection and segmentation process.
+It also saves a file ```./output/det.txt``` containing bounding boxes coordinates and a file ```./output/bin_mask.png``` containing the binary mask of the resulting Hand/NotHand segmentation.
 
 ## Example of displayed image
 
